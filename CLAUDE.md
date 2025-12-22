@@ -18,7 +18,10 @@ Azalea v6 is a home lab infrastructure project designed for:
 - [x] CLAUDE.md (this file)
 - [x] Architecture documentation
 
-**Next: Phase 1 - Single Node Bootstrap**
+**Next: Phase 1 - Host Setup**
+- Ansible roles for bare metal hosts
+- KVM/libvirt installation
+- Tailscale mesh setup
 
 ## Hardware
 
@@ -28,6 +31,15 @@ Azalea v6 is a home lab infrastructure project designed for:
 | `misty-bamboo` | 4c/8t, 32GB, 256GB SSD | Worker (scale-up) |
 | `lush-rainforest` | 4c/8t, 32GB, 256GB SSD | Worker (scale-up) |
 | `wild-outback` | 16c/32t, 128GB | Burst (temporary) |
+
+## K8s VMs (on 2 nodes initially)
+
+| VM | Role | RAM | vCPU | Disk | Host |
+|----|------|-----|------|------|------|
+| `sleepy-koala` | K8s control | 8GB | 4 | 80GB | golden-savanna |
+| `lazy-panda` | K8s worker | 24GB | 8 | 200GB | golden-savanna |
+| `chunky-wombat` | K8s worker | 16GB | 4 | 100GB | misty-bamboo |
+| `fancy-penguin` | K8s worker | 16GB | 4 | 100GB | misty-bamboo |
 
 ## Naming Convention
 

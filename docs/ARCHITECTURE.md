@@ -14,7 +14,7 @@ Scalable, hardened home lab. Starts with 1 node, grows organically. Full Kuberne
 |----------|--------|-----------|
 | Base OS | **Ubuntu Server 24.04** | Simple, well-documented, familiar |
 | Orchestration | **Full Kubernetes (kubeadm)** | Production-like experience, learning value |
-| Virtualization | **Bare-metal K8s** | Maximum efficiency, add VMs later if needed |
+| Virtualization | **KVM/libvirt VMs** | Reproducible, can snapshot/restore, IaC friendly |
 | GitOps | **FluxCD** | Lightweight, native Helm/Kustomize |
 | Ingress | **Traefik** | Flexible, K8s-native, good ecosystem |
 | External Access | **Cloudflare Tunnel** | Already set up, zero-trust |
@@ -84,66 +84,49 @@ $ kubectl get pods -n sanctuary
 
 ---
 
-## Resource Allocation (VMs When Added)
+## Resource Allocation (2-Node VM Setup)
 
-### Bare-Metal K8s (Current Plan)
+### VM Layout: 2 Hosts, 4 K8s VMs
 
-No VMs initially - K8s runs directly on hardware for efficiency.
+**Active nodes**: `golden-savanna` + `misty-bamboo`
+**Reserved**: `lush-rainforest` (add later)
 
-**Resource reservations**:
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  node-1 (6c/12t, 32GB)              │  Available for K8s       │
-│  ─────────────────────              │  ─────────────────       │
-│  OS + system: 2GB RAM, 2 threads    │  30GB RAM, 10 threads    │
-│  kubelet reserved: 1GB              │                          │
-├─────────────────────────────────────┼──────────────────────────┤
-│  node-2 (4c/8t, 32GB)               │  Available for K8s       │
-│  ─────────────────────              │  ─────────────────       │
-│  OS + system: 2GB RAM, 1 thread     │  29GB RAM, 7 threads     │
-│  kubelet reserved: 1GB              │                          │
-├─────────────────────────────────────┼──────────────────────────┤
-│  node-3 (4c/8t, 32GB)               │  Available for K8s       │
-│  ─────────────────────              │  ─────────────────       │
-│  OS + system: 2GB RAM, 1 thread     │  29GB RAM, 7 threads     │
-│  kubelet reserved: 1GB              │                          │
-└─────────────────────────────────────┴──────────────────────────┘
-
-Total K8s capacity: ~88GB RAM, 24 threads
-Single-node (node-1 only): 30GB RAM, 10 threads
-```
-
-### If Adding VMs Later (Virtualization Layer)
-
-Use case: Dev K8s cluster, Windows VM, isolated testing
-
-**Option A: VMs on node-1 only** (keep node-2/3 for prod K8s)
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  node-1 (6c/12t, 32GB) - Hypervisor + VMs                       │
+│  golden-savanna (6c/12t, 32GB, 512GB SSD)                       │
 ├─────────────────────────────────────────────────────────────────┤
-│  Host OS:        2GB RAM,  2 threads                            │
-│  libvirt/QEMU:   1GB RAM,  0 threads (shared)                   │
-│  ─────────────────────────────────────────────────────────────  │
-│  VM: dev-k8s     8GB RAM,  4 threads  (dev cluster)             │
-│  VM: windows    12GB RAM,  4 threads  (if needed)               │
-│  VM: sandbox     4GB RAM,  2 threads  (testing)                 │
-│  ─────────────────────────────────────────────────────────────  │
-│  Reserved:       5GB RAM              (buffer)                  │
+│  Host OS:          ~30GB disk, shared RAM via KSM              │
+│  ───────────────────────────────────────────────────────────    │
+│  sleepy-koala      8GB RAM,  4 vCPU,  80GB   K8s control-plane │
+│  lazy-panda       24GB RAM,  8 vCPU, 200GB   K8s worker #1     │
+│  ───────────────────────────────────────────────────────────    │
+│  Total VMs:       32GB RAM, 12 vCPU, 280GB disk                 │
+│  Remaining:       ~200GB disk (buffer/future)                   │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│  misty-bamboo (4c/8t, 32GB, 256GB SSD)                          │
+├─────────────────────────────────────────────────────────────────┤
+│  Host OS:          ~30GB disk, shared RAM via KSM              │
+│  ───────────────────────────────────────────────────────────    │
+│  chunky-wombat    16GB RAM,  4 vCPU, 100GB   K8s worker #2     │
+│  fancy-penguin    16GB RAM,  4 vCPU, 100GB   K8s worker #3     │
+│  ───────────────────────────────────────────────────────────    │
+│  Total VMs:       32GB RAM,  8 vCPU, 200GB disk                 │
+│  Remaining:       ~25GB disk (buffer)                           │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Option B: Distributed VMs** (VMs across nodes)
-```
-┌──────────────────┬──────────────────┬──────────────────┐
-│ node-1 (32GB)    │ node-2 (32GB)    │ node-3 (32GB)    │
-├──────────────────┼──────────────────┼──────────────────┤
-│ Host: 3GB        │ Host: 3GB        │ Host: 3GB        │
-│ K8s ctrl: 8GB    │ K8s work: 12GB   │ K8s work: 12GB   │
-│ VM-dev: 8GB      │ VM-test: 8GB     │ (no VMs)         │
-│ Buffer: 13GB     │ Buffer: 9GB      │ Buffer: 17GB     │
-└──────────────────┴──────────────────┴──────────────────┘
-```
+### VM Specifications
+
+| VM | Role | RAM | vCPU | Disk | Host |
+|----|------|-----|------|------|------|
+| `sleepy-koala` | K8s control | 8GB | 4 | 80GB | golden-savanna |
+| `lazy-panda` | K8s worker | 24GB | 8 | 200GB | golden-savanna |
+| `chunky-wombat` | K8s worker | 16GB | 4 | 100GB | misty-bamboo |
+| `fancy-penguin` | K8s worker | 16GB | 4 | 100GB | misty-bamboo |
+
+**Total K8s capacity**: 64GB RAM, 20 vCPU, 480GB storage
 
 ### VM Sizing Guidelines
 
@@ -543,45 +526,86 @@ azalea-v6/
 
 ## Implementation Phases
 
-### Phase 0: Foundation ◄── CURRENT
-- [ ] Create project structure
-- [ ] Set up flake.nix with all tools
-- [ ] Create CLAUDE.md for AI context
-- [ ] Copy architecture spec to docs/
+### Phase 0: Foundation ✅ COMPLETE
+- [x] Create project structure
+- [x] Set up flake.nix with all tools
+- [x] Create CLAUDE.md for AI context
+- [x] Copy architecture spec to docs/
 
-### Phase 1: Single Node Bootstrap
-- [ ] Ansible role: common (users, SSH, packages)
-- [ ] Ansible role: kubernetes (kubeadm, containerd)
-- [ ] Ansible role: storage (mount HDDs, NFS server)
-- [ ] Init script: kubeadm init + untaint control plane
-- [ ] FluxCD bootstrap
+### Phase 1: Host Setup ◄── NEXT
+Prepare the 2 bare metal hosts for virtualization.
 
-### Phase 2: Core Infrastructure
+**Step 1.1: Ansible for Hosts**
+- [ ] Ansible role: `common` (users, SSH keys, base packages)
+- [ ] Ansible role: `hypervisor` (KVM, libvirt, QEMU)
+- [ ] Ansible role: `tailscale` (install + auth key)
+- [ ] Playbook: `site.yml` for full host setup
+
+**Step 1.2: Apply to Hosts**
+- [ ] Install Ubuntu 24.04 on golden-savanna
+- [ ] Install Ubuntu 24.04 on misty-bamboo
+- [ ] Run ansible on both hosts
+- [ ] Verify Tailscale connectivity
+
+### Phase 2: VM Provisioning
+Create the 4 K8s VMs using Terraform + libvirt.
+
+**Step 2.1: Terraform Modules**
+- [ ] Module: `libvirt-cloudinit` (cloud-init ISO)
+- [ ] Module: `libvirt-vm` (VM creation)
+- [ ] Ubuntu cloud image download
+
+**Step 2.2: Create VMs**
+- [ ] sleepy-koala (8GB, 4 vCPU, 80GB) on golden-savanna
+- [ ] lazy-panda (24GB, 8 vCPU, 200GB) on golden-savanna
+- [ ] chunky-wombat (16GB, 4 vCPU, 100GB) on misty-bamboo
+- [ ] fancy-penguin (16GB, 4 vCPU, 100GB) on misty-bamboo
+
+**Step 2.3: VM Configuration**
+- [ ] Ansible role: `k8s-node` (containerd, kubeadm, kubelet)
+- [ ] Tailscale on all VMs
+- [ ] Verify all VMs reachable by hostname
+
+### Phase 3: Kubernetes Cluster
+Bootstrap the K8s cluster.
+
+**Step 3.1: Control Plane**
+- [ ] kubeadm init on sleepy-koala
+- [ ] Install Cilium CNI
+- [ ] Generate join token
+
+**Step 3.2: Workers**
+- [ ] kubeadm join on lazy-panda
+- [ ] kubeadm join on chunky-wombat
+- [ ] kubeadm join on fancy-penguin
+- [ ] Verify all nodes Ready
+
+**Step 3.3: FluxCD**
+- [ ] Bootstrap FluxCD
+- [ ] Connect to Git repo
+- [ ] Verify reconciliation
+
+### Phase 4: Core Infrastructure
+- [ ] local-path storage provisioner
 - [ ] Traefik ingress controller
 - [ ] cert-manager (Let's Encrypt via Cloudflare)
-- [ ] local-path storage provisioner
 - [ ] Cloudflare Tunnel deployment
 
-### Phase 3: First Apps
+### Phase 5: First Apps
 - [ ] AdGuard Home (DNS)
 - [ ] Home Assistant
-- [ ] Basic monitoring (just metrics for now)
+- [ ] Basic monitoring
 
-### Phase 4: More Apps + Hardening
+### Phase 6: More Apps + Hardening
 - [ ] Calibre-web
 - [ ] Authelia SSO
-- [ ] NetworkPolicies for all apps
-- [ ] Jellyfin (when HDD/USB storage available)
+- [ ] NetworkPolicies
+- [ ] Jellyfin (when storage available)
 
-### Phase 5: Multi-Node (Future)
-- [ ] Ansible: add worker playbook
-- [ ] Longhorn storage
-- [ ] Pod anti-affinity rules
-
-### Phase 6: Hybrid Cloud (Future)
-- [ ] Cloud node join procedure
-- [ ] Cloud storage backends
-- [ ] Cost controls
+### Phase 7: Scale-Up (Future)
+- [ ] Add lush-rainforest
+- [ ] Longhorn replicated storage
+- [ ] wild-outback burst integration
 
 ---
 
