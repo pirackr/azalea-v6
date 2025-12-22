@@ -1,0 +1,70 @@
+#cloud-config
+# Cloud-init for Azalea v6 VMs
+
+hostname: ${hostname}
+fqdn: ${hostname}.tail-scale.ts.net
+manage_etc_hosts: true
+
+timezone: ${timezone}
+
+# Create deploy user
+users:
+  - name: deploy
+    groups: [sudo]
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    lock_passwd: true
+    ssh_authorized_keys:
+      - ${ssh_public_key}
+
+# System packages
+packages:
+  - curl
+  - wget
+  - vim
+  - htop
+  - git
+  - jq
+  - net-tools
+  - ca-certificates
+  - gnupg
+  - apt-transport-https
+
+# Package updates
+package_update: true
+package_upgrade: true
+
+# Tailscale installation and setup
+runcmd:
+  # Install Tailscale
+  - curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
+  - curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
+  - apt-get update
+  - apt-get install -y tailscale
+  # Connect to Tailscale
+  - tailscale up --authkey=${tailscale_authkey} --accept-routes --hostname=${hostname}
+  # Disable SSH password authentication
+  - sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
+  - sed -i 's/^#*PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
+  - systemctl restart ssh
+
+# Enable automatic security updates
+write_files:
+  - path: /etc/apt/apt.conf.d/50unattended-upgrades
+    content: |
+      Unattended-Upgrade::Allowed-Origins {
+          "$${distro_id}:$${distro_codename}";
+          "$${distro_id}:$${distro_codename}-security";
+      };
+      Unattended-Upgrade::Automatic-Reboot "false";
+      Unattended-Upgrade::Remove-Unused-Dependencies "true";
+  - path: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+
+# Power state - reboot after cloud-init
+power_state:
+  mode: reboot
+  timeout: 300
+  condition: true
