@@ -1,0 +1,62 @@
+---
+# Common role defaults
+
+# Timezone
+common_timezone: "America/Los_Angeles"
+
+# Packages to install
+common_packages:
+  - curl
+  - wget
+  - vim
+  - htop
+  - git
+  - jq
+  - tmux
+  - unzip
+  - net-tools
+  - dnsutils
+  - iotop
+  - ncdu
+  - tree
+  - rsync
+  - ca-certificates
+  - gnupg
+  - lsb-release
+  - apt-transport-https
+  - python3-pip
+
+# Automatic updates
+common_unattended_upgrades: true
+common_auto_reboot: false
+common_auto_reboot_time: "02:00"
+
+# SSH hardening
+common_ssh_port: 22
+common_ssh_password_auth: false
+common_ssh_root_login: false
+common_ssh_permit_empty_passwords: false
+
+# UFW firewall
+common_ufw_enabled: true
+common_ufw_default_incoming: deny
+common_ufw_default_outgoing: allow
+common_ufw_allowed_ports:
+  - { port: 22, proto: tcp, comment: "SSH" }
+  # Tailscale uses UDP 41641 but handles its own firewall
+
+# Fail2ban
+common_fail2ban_enabled: true
+common_fail2ban_bantime: 3600
+common_fail2ban_findtime: 600
+common_fail2ban_maxretry: 5
+
+# Sysctl tuning
+common_sysctl_settings:
+  # Reduce swappiness for servers
+  vm.swappiness: 10
+  # Increase max file watchers (for large projects)
+  fs.inotify.max_user_watches: 524288
+  # Network tuning
+  net.core.somaxconn: 65535
+  net.ipv4.tcp_max_syn_backlog: 65535

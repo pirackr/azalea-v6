@@ -1,0 +1,173 @@
+---
+# Hypervisor role - KVM/libvirt setup
+
+# --- Package Installation ---
+- name: Install KVM and libvirt packages
+  ansible.builtin.apt:
+    name:
+      - qemu-kvm
+      - libvirt-daemon-system
+      - libvirt-daemon
+      - libvirt-clients
+      - bridge-utils
+      - virtinst
+      - virt-manager
+      - cpu-checker
+      - cloud-image-utils
+      - genisoimage
+    state: present
+    update_cache: true
+
+# --- Verify KVM Support ---
+- name: Check KVM support
+  ansible.builtin.command: kvm-ok
+  register: kvm_check
+  changed_when: false
+  failed_when: false
+
+- name: Display KVM support status
+  ansible.builtin.debug:
+    msg: "{{ kvm_check.stdout_lines }}"
+
+- name: Fail if KVM not supported
+  ansible.builtin.fail:
+    msg: "KVM is not supported on this system. Check BIOS settings."
+  when: kvm_check.rc != 0
+
+# --- Enable Nested Virtualization ---
+- name: Check if Intel CPU
+  ansible.builtin.stat:
+    path: /sys/module/kvm_intel
+  register: kvm_intel
+
+- name: Check if AMD CPU
+  ansible.builtin.stat:
+    path: /sys/module/kvm_amd
+  register: kvm_amd
+
+- name: Enable nested virtualization (Intel)
+  ansible.builtin.copy:
+    content: "options kvm_intel nested=1"
+    dest: /etc/modprobe.d/kvm-intel.conf
+    mode: "0644"
+  when:
+    - hypervisor_enable_nested_virt
+    - kvm_intel.stat.exists
+  notify: Reload kvm_intel
+
+- name: Enable nested virtualization (AMD)
+  ansible.builtin.copy:
+    content: "options kvm_amd nested=1"
+    dest: /etc/modprobe.d/kvm-amd.conf
+    mode: "0644"
+  when:
+    - hypervisor_enable_nested_virt
+    - kvm_amd.stat.exists
+  notify: Reload kvm_amd
+
+# --- User Configuration ---
+- name: Add user to libvirt group
+  ansible.builtin.user:
+    name: "{{ hypervisor_user }}"
+    groups:
+      - libvirt
+      - kvm
+    append: true
+
+# --- Service Configuration ---
+- name: Ensure libvirtd is enabled and running
+  ansible.builtin.systemd:
+    name: libvirtd
+    enabled: true
+    state: started
+
+# --- Storage Pool ---
+- name: Ensure storage pool directory exists
+  ansible.builtin.file:
+    path: "{{ hypervisor_pool_path }}"
+    state: directory
+    owner: "{{ hypervisor_qemu_user }}"
+    group: "{{ hypervisor_qemu_group }}"
+    mode: "0755"
+
+- name: Check if storage pool exists
+  ansible.builtin.command: virsh pool-info {{ hypervisor_pool_name }}
+  register: pool_check
+  changed_when: false
+  failed_when: false
+
+- name: Define storage pool
+  ansible.builtin.command: >
+    virsh pool-define-as
+    --name {{ hypervisor_pool_name }}
+    --type dir
+    --target {{ hypervisor_pool_path }}
+  when: pool_check.rc != 0
+  changed_when: true
+
+- name: Build storage pool
+  ansible.builtin.command: virsh pool-build {{ hypervisor_pool_name }}
+  when: pool_check.rc != 0
+  changed_when: true
+  failed_when: false  # May fail if already exists
+
+- name: Start storage pool
+  ansible.builtin.command: virsh pool-start {{ hypervisor_pool_name }}
+  when: pool_check.rc != 0
+  changed_when: true
+  failed_when: false  # May fail if already running
+
+- name: Autostart storage pool
+  ansible.builtin.command: virsh pool-autostart {{ hypervisor_pool_name }}
+  changed_when: true
+  failed_when: false
+
+# --- Default Network ---
+- name: Check if default network exists
+  ansible.builtin.command: virsh net-info {{ hypervisor_network_name }}
+  register: net_check
+  changed_when: false
+  failed_when: false
+
+- name: Start default network
+  ansible.builtin.command: virsh net-start {{ hypervisor_network_name }}
+  when: net_check.rc == 0
+  changed_when: true
+  failed_when: false  # May already be running
+
+- name: Autostart default network
+  ansible.builtin.command: virsh net-autostart {{ hypervisor_network_name }}
+  when: net_check.rc == 0
+  changed_when: true
+  failed_when: false
+
+# --- QEMU Configuration ---
+- name: Configure QEMU for security
+  ansible.builtin.lineinfile:
+    path: /etc/libvirt/qemu.conf
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  loop:
+    - { regexp: '^#?security_driver', line: 'security_driver = "apparmor"' }
+    - { regexp: '^#?user =', line: 'user = "{{ hypervisor_qemu_user }}"' }
+    - { regexp: '^#?group =', line: 'group = "{{ hypervisor_qemu_group }}"' }
+  notify: Restart libvirtd
+
+# --- Verification ---
+- name: Get libvirt version
+  ansible.builtin.command: virsh version --daemon
+  register: libvirt_version
+  changed_when: false
+
+- name: Display hypervisor info
+  ansible.builtin.debug:
+    msg: |
+      Hypervisor setup complete for {{ inventory_hostname }}
+
+      Libvirt version:
+      {{ libvirt_version.stdout }}
+
+      Storage pool: {{ hypervisor_pool_name }} ({{ hypervisor_pool_path }})
+      Network: {{ hypervisor_network_name }}
+      User {{ hypervisor_user }} added to libvirt/kvm groups

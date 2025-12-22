@@ -1,0 +1,54 @@
+---
+# Site playbook - Full configuration for bare metal hosts
+#
+# Prerequisites:
+#   - Bootstrap playbook has been run (SSH keys + Tailscale)
+#   - Hosts are reachable via Tailscale hostnames
+#
+# Run:
+#   ansible-playbook -i inventory/hosts.yml playbooks/site.yml
+
+- name: Configure bare metal hypervisors
+  hosts: bare_metal
+  become: true
+  gather_facts: true
+
+  vars:
+    # Override these in inventory or group_vars as needed
+    deploy_user: deploy
+
+  pre_tasks:
+    - name: Display host info
+      ansible.builtin.debug:
+        msg: |
+          Configuring {{ inventory_hostname }}
+          OS: {{ ansible_distribution }} {{ ansible_distribution_version }}
+          Kernel: {{ ansible_kernel }}
+          CPU: {{ ansible_processor_vcpus }} vCPUs
+          Memory: {{ ansible_memtotal_mb }} MB
+
+  roles:
+    - role: ../roles/common
+      tags: [common]
+
+    - role: ../roles/hypervisor
+      tags: [hypervisor]
+      vars:
+        hypervisor_user: "{{ deploy_user }}"
+
+  post_tasks:
+    - name: Display completion message
+      ansible.builtin.debug:
+        msg: |
+          Configuration complete for {{ inventory_hostname }}!
+
+          Services configured:
+            - SSH hardened (port {{ common_ssh_port }})
+            - UFW firewall enabled
+            - Fail2ban active
+            - Unattended upgrades enabled
+            - KVM/libvirt ready
+
+          Next steps:
+            - Provision VMs using terraform or virt-install
+            - Install Kubernetes on VMs

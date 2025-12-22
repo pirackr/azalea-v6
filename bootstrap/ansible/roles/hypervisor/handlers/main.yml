@@ -1,0 +1,19 @@
+---
+# Hypervisor role handlers
+
+- name: Restart libvirtd
+  ansible.builtin.systemd:
+    name: libvirtd
+    state: restarted
+
+- name: Reload kvm_intel
+  ansible.builtin.shell: |
+    modprobe -r kvm_intel
+    modprobe kvm_intel nested=1
+  failed_when: false  # May fail if VMs are running
+
+- name: Reload kvm_amd
+  ansible.builtin.shell: |
+    modprobe -r kvm_amd
+    modprobe kvm_amd nested=1
+  failed_when: false  # May fail if VMs are running

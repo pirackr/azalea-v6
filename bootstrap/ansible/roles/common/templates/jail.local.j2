@@ -1,0 +1,25 @@
+# {{ ansible_managed }}
+# Fail2ban local configuration
+
+[DEFAULT]
+# Ban settings
+bantime = {{ common_fail2ban_bantime }}
+findtime = {{ common_fail2ban_findtime }}
+maxretry = {{ common_fail2ban_maxretry }}
+
+# Backend
+backend = systemd
+
+# Ignore localhost and Tailscale subnet
+ignoreip = 127.0.0.1/8 ::1 100.64.0.0/10
+
+# Action - ban via iptables
+banaction = iptables-multiport
+banaction_allports = iptables-allports
+
+[sshd]
+enabled = true
+port = {{ common_ssh_port }}
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = {{ common_fail2ban_maxretry }}

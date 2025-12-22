@@ -1,0 +1,24 @@
+---
+# Hypervisor role defaults
+
+# User to add to libvirt group
+hypervisor_user: deploy
+
+# Storage pool configuration
+hypervisor_pool_name: default
+hypervisor_pool_path: /var/lib/libvirt/images
+
+# VM images directory
+hypervisor_images_path: /var/lib/libvirt/images
+
+# Network configuration
+# Using default NAT network - VMs get Tailscale individually
+hypervisor_network_name: default
+hypervisor_network_bridge: virbr0
+
+# CPU and memory settings for nested virtualization
+hypervisor_enable_nested_virt: true
+
+# QEMU settings
+hypervisor_qemu_user: libvirt-qemu
+hypervisor_qemu_group: kvm
