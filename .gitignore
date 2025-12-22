@@ -1,0 +1,36 @@
+# Secrets (unencrypted)
+secrets/*.yaml
+!secrets/.sops.yaml
+*.key
+*.pem
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+
+# Ansible
+*.retry
+
+# Nix
+result
+.direnv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Kubernetes
+kubeconfig
+*.kubeconfig
+
+# Age keys (never commit)
+*.agekey
+keys.txt
