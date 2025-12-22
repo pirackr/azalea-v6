@@ -1,0 +1,17 @@
+---
+# Tailscale role defaults
+
+# Auth key (decrypted) - passed from playbook
+tailscale_authkey: ""
+
+# Tailscale up options
+tailscale_args: ""
+
+# Whether to accept routes from other nodes
+tailscale_accept_routes: true
+
+# Whether to advertise as exit node
+tailscale_exit_node: false
+
+# Tags to apply (optional)
+tailscale_tags: []

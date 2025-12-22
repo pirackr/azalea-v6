@@ -1,10 +1,11 @@
 ---
-# Bootstrap playbook - initial SSH key injection
+# Bootstrap playbook - SSH key injection + Tailscale setup
 #
 # Run with password auth:
 #   ansible-playbook -i inventory/bootstrap.yml playbooks/bootstrap.yml -u <user> -kK
 #
 # After this, you can use key-based auth with the deploy user
+# and hosts are reachable via Tailscale hostnames
 
 - name: Bootstrap bare metal hosts
   hosts: bare_metal
@@ -13,8 +14,10 @@
   vars:
     deploy_user: deploy
     deploy_public_key: "{{ lookup('file', '../../../secrets/deploy_key.pub') }}"
+    tailscale_authkey: "{{ lookup('pipe', '../../../bootstrap/scripts/decrypt-tailscale-key.sh') }}"
 
   tasks:
+    # --- SSH Key Setup ---
     - name: Create deploy user
       ansible.builtin.user:
         name: "{{ deploy_user }}"
@@ -47,9 +50,25 @@
         group: "{{ deploy_user }}"
         mode: "0700"
 
+  roles:
+    # --- Tailscale Setup ---
+    - role: ../roles/tailscale
+      vars:
+        tailscale_accept_routes: true
+
+  post_tasks:
     - name: Display success message
       ansible.builtin.debug:
         msg: |
           Bootstrap complete for {{ inventory_hostname }}!
-          You can now SSH with: ssh -i secrets/deploy_key deploy@{{ inventory_hostname }}
-          (Decrypt key first: age -d -i ~/.config/sops/age/keys.txt secrets/deploy_key.age > secrets/deploy_key)
+
+          SSH access:
+            ssh -i secrets/deploy_key deploy@{{ inventory_hostname }}
+
+          Tailscale:
+            Host is now reachable as: {{ inventory_hostname }}
+            Tailscale IP: {{ tailscale_ip.stdout }}
+
+          Next steps:
+            1. Verify: ssh deploy@{{ inventory_hostname }}  (via Tailscale)
+            2. Run full setup: ansible-playbook -i inventory/hosts.yml playbooks/site.yml

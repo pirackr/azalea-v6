@@ -2,11 +2,19 @@
 
 Initial setup for bare metal hosts before full Ansible configuration.
 
+## What Bootstrap Does
+
+1. Creates a `deploy` user with passwordless sudo
+2. Injects SSH public key for key-based auth
+3. Installs and configures Tailscale
+4. Joins hosts to your Tailnet (mesh network)
+
 ## Prerequisites
 
 - Ubuntu 24.04 installed on bare metal hosts
 - SSH access with password auth enabled
 - User with sudo privileges on each host
+- Tailscale auth key (encrypted in `secrets/tailscale-authkey.age`)
 
 ## Files
 
@@ -16,10 +24,13 @@ bootstrap/
 │   ├── inventory/
 │   │   ├── bootstrap.yml   # IPs for initial password auth
 │   │   └── hosts.yml       # Production inventory (after bootstrap)
-│   └── playbooks/
-│       └── bootstrap.yml   # Creates deploy user + injects SSH key
+│   ├── playbooks/
+│   │   └── bootstrap.yml   # Creates deploy user + SSH key + Tailscale
+│   └── roles/
+│       └── tailscale/      # Tailscale installation role
 ├── scripts/
-│   └── decrypt-key.sh      # Decrypt the SSH private key
+│   ├── decrypt-key.sh              # Decrypt SSH private key
+│   └── decrypt-tailscale-key.sh    # Decrypt Tailscale auth key
 └── README.md               # This file
 ```
 
@@ -71,11 +82,15 @@ The decrypted key will be at `secrets/deploy_key` (gitignored).
 
 ## Step 4: Verify Access
 
-Test key-based SSH access:
+Test key-based SSH access (via Tailscale hostname):
 
 ```bash
+# Via Tailscale (should work from anywhere)
 ssh -i secrets/deploy_key deploy@golden-savanna
 ssh -i secrets/deploy_key deploy@misty-bamboo
+
+# Check Tailscale status on a host
+ssh deploy@golden-savanna tailscale status
 ```
 
 ## Step 5: Continue with Full Setup

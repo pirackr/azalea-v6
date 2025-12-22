@@ -1,0 +1,71 @@
+---
+# Tailscale installation and configuration
+
+- name: Check if Tailscale is already installed
+  ansible.builtin.command: tailscale version
+  register: tailscale_installed
+  changed_when: false
+  failed_when: false
+
+- name: Install Tailscale
+  when: tailscale_installed.rc != 0
+  block:
+    - name: Download Tailscale install script
+      ansible.builtin.get_url:
+        url: https://tailscale.com/install.sh
+        dest: /tmp/tailscale-install.sh
+        mode: "0755"
+
+    - name: Run Tailscale install script
+      ansible.builtin.command: /tmp/tailscale-install.sh
+      changed_when: true
+
+    - name: Clean up install script
+      ansible.builtin.file:
+        path: /tmp/tailscale-install.sh
+        state: absent
+
+- name: Ensure Tailscale service is enabled
+  ansible.builtin.systemd:
+    name: tailscaled
+    enabled: true
+    state: started
+
+- name: Check Tailscale status
+  ansible.builtin.command: tailscale status --json
+  register: tailscale_status
+  changed_when: false
+  failed_when: false
+
+- name: Authenticate with Tailscale
+  when: >
+    tailscale_authkey | length > 0 and
+    (tailscale_status.rc != 0 or
+     (tailscale_status.stdout | from_json).BackendState != "Running")
+  block:
+    - name: Build tailscale up arguments
+      ansible.builtin.set_fact:
+        tailscale_up_args: >-
+          --authkey={{ tailscale_authkey }}
+          --hostname={{ inventory_hostname }}
+          {% if tailscale_accept_routes %}--accept-routes{% endif %}
+          {% if tailscale_exit_node %}--advertise-exit-node{% endif %}
+          {% for tag in tailscale_tags %}--advertise-tags=tag:{{ tag }}{% endfor %}
+          {{ tailscale_args }}
+
+    - name: Run tailscale up
+      ansible.builtin.command: tailscale up {{ tailscale_up_args }}
+      changed_when: true
+      no_log: true  # Hide authkey from logs
+
+- name: Get Tailscale IP
+  ansible.builtin.command: tailscale ip -4
+  register: tailscale_ip
+  changed_when: false
+
+- name: Display Tailscale info
+  ansible.builtin.debug:
+    msg: |
+      Tailscale configured for {{ inventory_hostname }}
+      Tailscale IP: {{ tailscale_ip.stdout }}
+      Hostname: {{ inventory_hostname }}
