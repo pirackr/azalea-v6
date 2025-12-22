@@ -1,6 +1,7 @@
 # Secrets (unencrypted)
 secrets/*.yaml
 !secrets/.sops.yaml
+secrets/deploy_key
 *.key
 *.pem
 

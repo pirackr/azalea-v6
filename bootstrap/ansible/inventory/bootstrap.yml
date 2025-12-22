@@ -1,0 +1,18 @@
+# Bootstrap inventory - used for initial SSH key injection
+# These IPs are temporary - after Tailscale setup, use hostnames
+#
+# Usage:
+#   ansible-playbook -i inventory/bootstrap.yml playbooks/bootstrap.yml -u <user> -kK
+
+all:
+  children:
+    bare_metal:
+      hosts:
+        golden-savanna:
+          ansible_host: 192.168.4.150  # UPDATE: Your actual IP
+        misty-bamboo:
+          ansible_host: 192.168.4.151  # UPDATE: Your actual IP
+
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    # Will use password auth for bootstrap (-k flag)

@@ -1,0 +1,55 @@
+---
+# Bootstrap playbook - initial SSH key injection
+#
+# Run with password auth:
+#   ansible-playbook -i inventory/bootstrap.yml playbooks/bootstrap.yml -u <user> -kK
+#
+# After this, you can use key-based auth with the deploy user
+
+- name: Bootstrap bare metal hosts
+  hosts: bare_metal
+  become: true
+
+  vars:
+    deploy_user: deploy
+    deploy_public_key: "{{ lookup('file', '../../../secrets/deploy_key.pub') }}"
+
+  tasks:
+    - name: Create deploy user
+      ansible.builtin.user:
+        name: "{{ deploy_user }}"
+        shell: /bin/bash
+        groups: sudo
+        append: true
+        create_home: true
+        state: present
+
+    - name: Set authorized key for deploy user
+      ansible.posix.authorized_key:
+        user: "{{ deploy_user }}"
+        key: "{{ deploy_public_key }}"
+        state: present
+        exclusive: false
+
+    - name: Allow deploy user passwordless sudo
+      ansible.builtin.lineinfile:
+        path: /etc/sudoers.d/deploy
+        line: "{{ deploy_user }} ALL=(ALL) NOPASSWD: ALL"
+        create: true
+        mode: "0440"
+        validate: "visudo -cf %s"
+
+    - name: Ensure SSH directory exists
+      ansible.builtin.file:
+        path: "/home/{{ deploy_user }}/.ssh"
+        state: directory
+        owner: "{{ deploy_user }}"
+        group: "{{ deploy_user }}"
+        mode: "0700"
+
+    - name: Display success message
+      ansible.builtin.debug:
+        msg: |
+          Bootstrap complete for {{ inventory_hostname }}!
+          You can now SSH with: ssh -i secrets/deploy_key deploy@{{ inventory_hostname }}
+          (Decrypt key first: age -d -i ~/.config/sops/age/keys.txt secrets/deploy_key.age > secrets/deploy_key)
