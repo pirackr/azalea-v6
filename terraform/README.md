@@ -21,12 +21,19 @@ terraform/
    ansible-playbook -i inventory/hosts.yml playbooks/site.yml
    ```
 
-2. **Secrets in place**:
-   - `secrets/.s3` - R2 credentials for state storage
+2. **Download Ubuntu cloud image**:
+   ```bash
+   mkdir -p terraform/images
+   wget -O terraform/images/ubuntu-24.04-server-cloudimg-amd64.img \
+     https://cloud-images.ubuntu.com/releases/noble/release/ubuntu-24.04-server-cloudimg-amd64.img
+   ```
+
+3. **Secrets in place**:
+   - `secrets/.s3.enc` - Encrypted R2 credentials for state storage
    - `secrets/deploy_key.pub` - SSH public key
    - `secrets/tailscale-authkey.age` - Encrypted Tailscale key
 
-3. **OpenTofu installed** (via `nix develop` at project root)
+4. **OpenTofu installed** (via `nix develop` at project root)
 
 ## VM Specifications
 

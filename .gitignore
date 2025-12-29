@@ -2,6 +2,7 @@
 secrets/*.yaml
 !secrets/.sops.yaml
 secrets/deploy_key
+secrets/.s3
 *.key
 *.pem
 
