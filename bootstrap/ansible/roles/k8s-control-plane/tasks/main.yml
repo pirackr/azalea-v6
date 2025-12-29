@@ -1,0 +1,62 @@
+---
+# K8s Control Plane role - initializes the Kubernetes control plane
+
+- name: Check if cluster is already initialized
+  ansible.builtin.stat:
+    path: /etc/kubernetes/admin.conf
+  register: kubeadm_init_check
+
+- name: Initialize Kubernetes control plane
+  ansible.builtin.command: >
+    kubeadm init
+    --pod-network-cidr={{ pod_network_cidr }}
+    --service-cidr={{ service_cidr }}
+    --control-plane-endpoint={{ control_plane_endpoint }}
+    --skip-phases=addon/kube-proxy
+  when: not kubeadm_init_check.stat.exists
+  register: kubeadm_init
+  changed_when: kubeadm_init.rc == 0
+
+- name: Create .kube directory for deploy user
+  ansible.builtin.file:
+    path: "{{ kubeconfig_dir }}"
+    state: directory
+    owner: deploy
+    group: deploy
+    mode: "0755"
+
+- name: Copy admin.conf to deploy user
+  ansible.builtin.copy:
+    src: /etc/kubernetes/admin.conf
+    dest: "{{ kubeconfig_dir }}/config"
+    remote_src: true
+    owner: deploy
+    group: deploy
+    mode: "0600"
+
+- name: Generate join command
+  ansible.builtin.command: kubeadm token create --print-join-command
+  register: join_command
+  changed_when: false
+
+- name: Store join command for workers
+  ansible.builtin.set_fact:
+    kubeadm_join_command: "{{ join_command.stdout }}"
+
+- name: Save join command to file
+  ansible.builtin.copy:
+    content: "{{ join_command.stdout }}"
+    dest: /etc/kubernetes/join-command
+    mode: "0600"
+
+- name: Display cluster info
+  ansible.builtin.debug:
+    msg: |
+      Kubernetes control plane initialized!
+
+      Control plane endpoint: {{ control_plane_endpoint }}
+      Pod network CIDR: {{ pod_network_cidr }}
+
+      To access the cluster:
+        export KUBECONFIG={{ kubeconfig_dir }}/config
+        kubectl get nodes

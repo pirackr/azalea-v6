@@ -1,0 +1,12 @@
+---
+# Control plane configuration
+control_plane_endpoint: "{{ ansible_hostname }}"
+
+# Pod network CIDR (must match CNI)
+pod_network_cidr: "10.244.0.0/16"
+
+# Service CIDR
+service_cidr: "10.96.0.0/12"
+
+# kubeconfig location
+kubeconfig_dir: "/home/deploy/.kube"

@@ -56,6 +56,7 @@ module "sleepy_koala" {
   name         = "sleepy-koala"
   vcpu         = 4
   memory       = 8192  # 8GB
+  disk_size    = 80 * 1024 * 1024 * 1024  # 80GB
   source_image = local.ubuntu_image
 
   ssh_public_key    = var.ssh_public_key
@@ -69,6 +70,7 @@ module "lazy_panda" {
   name         = "lazy-panda"
   vcpu         = 8
   memory       = 24576  # 24GB
+  disk_size    = 200 * 1024 * 1024 * 1024  # 200GB
   source_image = local.ubuntu_image
 
   ssh_public_key    = var.ssh_public_key

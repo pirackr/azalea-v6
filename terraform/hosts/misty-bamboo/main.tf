@@ -56,6 +56,7 @@ module "chunky_wombat" {
   name         = "chunky-wombat"
   vcpu         = 4
   memory       = 16384  # 16GB
+  disk_size    = 100 * 1024 * 1024 * 1024  # 100GB
   source_image = local.ubuntu_image
 
   ssh_public_key    = var.ssh_public_key
@@ -69,6 +70,7 @@ module "fancy_penguin" {
   name         = "fancy-penguin"
   vcpu         = 4
   memory       = 16384  # 16GB
+  disk_size    = 100 * 1024 * 1024 * 1024  # 100GB
   source_image = local.ubuntu_image
 
   ssh_public_key    = var.ssh_public_key

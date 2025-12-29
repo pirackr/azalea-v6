@@ -1,0 +1,88 @@
+---
+# Kubernetes Cluster Deployment Playbook
+# Deploys a K8s cluster using kubeadm with Cilium CNI
+
+# --- Install Kubernetes prerequisites on all nodes ---
+- name: Install Kubernetes prerequisites
+  hosts: k8s_nodes
+  become: true
+  roles:
+    - role: ../roles/kubernetes
+      tags: [kubernetes, prerequisites]
+
+# --- Initialize control plane ---
+- name: Initialize Kubernetes control plane
+  hosts: k8s_control_plane
+  become: true
+  roles:
+    - role: ../roles/k8s-control-plane
+      tags: [kubernetes, control-plane]
+
+# --- Install Cilium CNI ---
+- name: Install Cilium CNI
+  hosts: k8s_control_plane
+  become: true
+  roles:
+    - role: ../roles/cilium
+      tags: [kubernetes, cilium, cni]
+
+# --- Join worker nodes ---
+- name: Join worker nodes to cluster
+  hosts: k8s_workers
+  become: true
+  serial: 1  # Join one at a time
+  roles:
+    - role: ../roles/k8s-worker
+      tags: [kubernetes, workers]
+
+# --- Verify cluster ---
+- name: Verify cluster status
+  hosts: k8s_control_plane
+  become: false
+  tasks:
+    - name: Wait for all nodes to be ready
+      ansible.builtin.command: kubectl get nodes
+      environment:
+        KUBECONFIG: /home/deploy/.kube/config
+      register: nodes_status
+      retries: 12
+      delay: 10
+      until: "'NotReady' not in nodes_status.stdout"
+      changed_when: false
+      tags: [kubernetes, verify]
+
+    - name: Display cluster nodes
+      ansible.builtin.debug:
+        msg: "{{ nodes_status.stdout_lines }}"
+      tags: [kubernetes, verify]
+
+    - name: Get cluster pods
+      ansible.builtin.command: kubectl get pods -A
+      environment:
+        KUBECONFIG: /home/deploy/.kube/config
+      register: pods_status
+      changed_when: false
+      tags: [kubernetes, verify]
+
+    - name: Display cluster pods
+      ansible.builtin.debug:
+        msg: "{{ pods_status.stdout_lines }}"
+      tags: [kubernetes, verify]
+
+    - name: Display success message
+      ansible.builtin.debug:
+        msg: |
+          ============================================
+          Kubernetes cluster deployed successfully!
+          ============================================
+
+          Control plane: sleepy-koala
+          Workers: lazy-panda
+
+          To access the cluster from your local machine:
+            scp deploy@sleepy-koala:~/.kube/config ~/.kube/config
+
+          Or SSH to the control plane:
+            ssh deploy@sleepy-koala
+            kubectl get nodes
+      tags: [kubernetes, verify]

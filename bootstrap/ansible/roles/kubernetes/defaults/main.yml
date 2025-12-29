@@ -1,0 +1,13 @@
+---
+# Kubernetes version
+kubernetes_version: "1.31"
+kubernetes_apt_version: "1.31.*"
+
+# Container runtime
+containerd_version: "1.7.*"
+
+# Pod network CIDR (for Cilium)
+pod_network_cidr: "10.244.0.0/16"
+
+# Service CIDR
+service_cidr: "10.96.0.0/12"

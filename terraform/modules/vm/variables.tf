@@ -22,6 +22,11 @@ variable "source_image" {
   type        = string
 }
 
+variable "disk_size" {
+  description = "Disk size in bytes (cloud-init growpart will resize partition)"
+  type        = number
+}
+
 variable "pool_name" {
   description = "Libvirt storage pool name"
   type        = string

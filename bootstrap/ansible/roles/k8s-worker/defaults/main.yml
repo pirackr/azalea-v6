@@ -1,0 +1,3 @@
+---
+# Control plane host to get join command from
+control_plane_host: "sleepy-koala"

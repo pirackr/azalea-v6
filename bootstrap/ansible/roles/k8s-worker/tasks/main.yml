@@ -1,0 +1,25 @@
+---
+# K8s Worker role - joins worker nodes to the cluster
+
+- name: Check if node is already joined
+  ansible.builtin.stat:
+    path: /etc/kubernetes/kubelet.conf
+  register: kubelet_conf_check
+
+- name: Get join command from control plane
+  ansible.builtin.slurp:
+    src: /etc/kubernetes/join-command
+  delegate_to: "{{ control_plane_host }}"
+  register: join_command_file
+  when: not kubelet_conf_check.stat.exists
+
+- name: Join cluster
+  ansible.builtin.command: "{{ join_command_file.content | b64decode }}"
+  when: not kubelet_conf_check.stat.exists
+  register: kubeadm_join
+  changed_when: kubeadm_join.rc == 0
+
+- name: Display join status
+  ansible.builtin.debug:
+    msg: "Node {{ ansible_hostname }} joined the cluster successfully!"
+  when: kubeadm_join is changed

@@ -1,0 +1,14 @@
+---
+# Cilium version
+cilium_version: "1.16.5"
+
+# Cilium CLI version
+cilium_cli_version: "0.16.22"
+
+# Enable kube-proxy replacement
+cilium_kube_proxy_replacement: true
+
+# Hubble (observability)
+cilium_hubble_enabled: true
+cilium_hubble_relay_enabled: true
+cilium_hubble_ui_enabled: true
