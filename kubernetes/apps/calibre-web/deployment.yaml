@@ -17,6 +17,25 @@ spec:
       labels:
         app.kubernetes.io/name: calibre-web
     spec:
+      initContainers:
+        - name: init-calibre-db
+          image: lscr.io/linuxserver/calibre:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              if [ ! -f /books/metadata.db ]; then
+                echo "Creating Calibre library..."
+                calibredb --with-library=/books list 2>/dev/null || true
+                ls -la /books/
+              fi
+              echo "Setting permissions..."
+              chown -R 1000:1000 /books
+              chmod -R 755 /books
+              ls -la /books/
+          volumeMounts:
+            - name: books
+              mountPath: /books
       containers:
         - name: calibre-web
           image: lscr.io/linuxserver/calibre-web:latest
