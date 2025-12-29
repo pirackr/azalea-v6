@@ -28,6 +28,7 @@
             opentofu
             ansible
             ansible-lint
+            cdrtools  # mkisofs for libvirt cloud-init
 
             # Secrets management
             sops
