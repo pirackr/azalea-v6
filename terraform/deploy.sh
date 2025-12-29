@@ -41,7 +41,8 @@ fi
 
 # Decrypt and source S3 credentials
 if [[ -f "$PROJECT_ROOT/secrets/.s3.enc" ]]; then
-    eval "$(sops -d "$PROJECT_ROOT/secrets/.s3.enc" | jq -r '.data')"
+    S3_CREDS=$(sops -d --output-type json "$PROJECT_ROOT/secrets/.s3.enc" | jq -r '.data')
+    eval "$S3_CREDS"
     echo "✓ Loaded S3 credentials"
 else
     echo "Error: S3 credentials not found at $PROJECT_ROOT/secrets/.s3.enc"
