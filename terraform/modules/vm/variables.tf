@@ -17,9 +17,9 @@ variable "memory" {
   default     = 2048
 }
 
-variable "disk_size" {
-  description = "Disk size in bytes (use multipliers like 1024*1024*1024 for GB)"
-  type        = number
+variable "source_image" {
+  description = "Path to source image (file:// URL)"
+  type        = string
 }
 
 variable "pool_name" {

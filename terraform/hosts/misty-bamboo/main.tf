@@ -7,7 +7,7 @@ terraform {
   required_providers {
     libvirt = {
       source  = "dmacvicar/libvirt"
-      version = "~> 0.9"
+      version = "0.8.3"
     }
   }
 
@@ -34,7 +34,6 @@ variable "ssh_private_key_path" {
   type        = string
 }
 
-# Variables
 variable "ssh_public_key" {
   description = "SSH public key for deploy user"
   type        = string
@@ -46,26 +45,18 @@ variable "tailscale_authkey" {
   sensitive   = true
 }
 
-# Ubuntu cloud image
-resource "libvirt_volume" "ubuntu_base" {
-  name = "ubuntu-24.04-server-cloudimg-amd64.qcow2"
-  pool = "default"
-  create = {
-    content = {
-      url = "https://cloud-images.ubuntu.com/releases/noble/release/ubuntu-24.04-server-cloudimg-amd64.img"
-    }
-  }
+locals {
+  ubuntu_image = "file:///home/pirackr/Working/azalea-v6/terraform/images/ubuntu-24.04-server-cloudimg-amd64.img"
 }
 
 # chunky-wombat - K8s worker
 module "chunky_wombat" {
   source = "../../modules/vm"
 
-  name            = "chunky-wombat"
-  vcpu            = 4
-  memory          = 16384                           # 16GB
-  disk_size       = 100 * 1024 * 1024 * 1024        # 100GB
-  base_image_name = libvirt_volume.ubuntu_base.name
+  name         = "chunky-wombat"
+  vcpu         = 4
+  memory       = 16384  # 16GB
+  source_image = local.ubuntu_image
 
   ssh_public_key    = var.ssh_public_key
   tailscale_authkey = var.tailscale_authkey
@@ -75,11 +66,10 @@ module "chunky_wombat" {
 module "fancy_penguin" {
   source = "../../modules/vm"
 
-  name            = "fancy-penguin"
-  vcpu            = 4
-  memory          = 16384                           # 16GB
-  disk_size       = 100 * 1024 * 1024 * 1024        # 100GB
-  base_image_name = libvirt_volume.ubuntu_base.name
+  name         = "fancy-penguin"
+  vcpu         = 4
+  memory       = 16384  # 16GB
+  source_image = local.ubuntu_image
 
   ssh_public_key    = var.ssh_public_key
   tailscale_authkey = var.tailscale_authkey

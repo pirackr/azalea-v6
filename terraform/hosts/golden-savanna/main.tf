@@ -7,7 +7,7 @@ terraform {
   required_providers {
     libvirt = {
       source  = "dmacvicar/libvirt"
-      version = "~> 0.9"
+      version = "0.8.3"
     }
   }
 
@@ -34,7 +34,6 @@ variable "ssh_private_key_path" {
   type        = string
 }
 
-# Variables
 variable "ssh_public_key" {
   description = "SSH public key for deploy user"
   type        = string
@@ -46,14 +45,18 @@ variable "tailscale_authkey" {
   sensitive   = true
 }
 
+locals {
+  ubuntu_image = "file:///home/pirackr/Working/azalea-v6/terraform/images/ubuntu-24.04-server-cloudimg-amd64.img"
+}
+
 # sleepy-koala - K8s control plane
 module "sleepy_koala" {
   source = "../../modules/vm"
 
-  name     = "sleepy-koala"
-  vcpu     = 4
-  memory   = 8192                    # 8GB
-  disk_size = 80 * 1024 * 1024 * 1024  # 80GB
+  name         = "sleepy-koala"
+  vcpu         = 4
+  memory       = 8192  # 8GB
+  source_image = local.ubuntu_image
 
   ssh_public_key    = var.ssh_public_key
   tailscale_authkey = var.tailscale_authkey
@@ -63,10 +66,10 @@ module "sleepy_koala" {
 module "lazy_panda" {
   source = "../../modules/vm"
 
-  name      = "lazy-panda"
-  vcpu      = 8
-  memory    = 24576                     # 24GB
-  disk_size = 200 * 1024 * 1024 * 1024  # 200GB
+  name         = "lazy-panda"
+  vcpu         = 8
+  memory       = 24576  # 24GB
+  source_image = local.ubuntu_image
 
   ssh_public_key    = var.ssh_public_key
   tailscale_authkey = var.tailscale_authkey

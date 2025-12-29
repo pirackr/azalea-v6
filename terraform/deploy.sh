@@ -39,12 +39,12 @@ if [[ ! -d "$SCRIPT_DIR/hosts/$HOST" ]]; then
     exit 1
 fi
 
-# Source S3 credentials
-if [[ -f "$PROJECT_ROOT/secrets/.s3" ]]; then
-    source "$PROJECT_ROOT/secrets/.s3"
+# Decrypt and source S3 credentials
+if [[ -f "$PROJECT_ROOT/secrets/.s3.enc" ]]; then
+    eval "$(sops -d "$PROJECT_ROOT/secrets/.s3.enc" | jq -r '.data')"
     echo "✓ Loaded S3 credentials"
 else
-    echo "Error: S3 credentials not found at $PROJECT_ROOT/secrets/.s3"
+    echo "Error: S3 credentials not found at $PROJECT_ROOT/secrets/.s3.enc"
     exit 1
 fi
 
@@ -107,7 +107,7 @@ case $ACTION in
         tofu plan
         ;;
     apply)
-        tofu apply
+        tofu apply -auto-approve
         ;;
     destroy)
         tofu destroy
