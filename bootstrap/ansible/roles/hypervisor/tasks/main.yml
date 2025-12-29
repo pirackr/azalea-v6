@@ -149,7 +149,7 @@
     line: "{{ item.line }}"
     state: present
   loop:
-    - { regexp: '^#?security_driver', line: 'security_driver = "apparmor"' }
+    - { regexp: '^#?security_driver', line: 'security_driver = "none"' }
     - { regexp: '^#?user =', line: 'user = "{{ hypervisor_qemu_user }}"' }
     - { regexp: '^#?group =', line: 'group = "{{ hypervisor_qemu_group }}"' }
   notify: Restart libvirtd
