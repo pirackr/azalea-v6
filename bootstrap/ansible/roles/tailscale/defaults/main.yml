@@ -13,5 +13,8 @@ tailscale_accept_routes: true
 # Whether to advertise as exit node
 tailscale_exit_node: false
 
+# Routes to advertise (e.g., "10.0.0.0/8,10.96.0.0/12" for K8s pod/service CIDRs)
+tailscale_advertise_routes: ""
+
 # Tags to apply (optional)
 tailscale_tags: []
