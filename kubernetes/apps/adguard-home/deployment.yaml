@@ -17,6 +17,8 @@ spec:
       labels:
         app.kubernetes.io/name: adguard-home
     spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       containers:
         - name: adguard-home
           image: adguard/adguardhome:latest
@@ -51,18 +53,17 @@ spec:
             limits:
               cpu: 500m
               memory: 512Mi
-          # Probes check port 3000 (works for both initial setup and after config)
           livenessProbe:
             httpGet:
               path: /
-              port: http-initial
+              port: http
             initialDelaySeconds: 30
             periodSeconds: 10
             failureThreshold: 5
           readinessProbe:
             httpGet:
               path: /
-              port: http-initial
+              port: http
             initialDelaySeconds: 10
             periodSeconds: 5
       volumes:
