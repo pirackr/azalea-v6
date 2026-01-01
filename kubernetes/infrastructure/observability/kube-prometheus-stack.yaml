@@ -63,6 +63,22 @@ spec:
               resources:
                 requests:
                   storage: 20Gi
+        # Scrape bare metal and VM hosts via Tailscale
+        additionalScrapeConfigs:
+          - job_name: 'bare-metal-nodes'
+            static_configs:
+              - targets:
+                  - 'golden-savanna:9100'
+                  - 'misty-bamboo:9100'
+                labels:
+                  tier: bare-metal
+          - job_name: 'k8s-vm-hosts'
+            static_configs:
+              - targets:
+                  - 'sleepy-koala:9100'
+                  - 'lazy-panda:9100'
+                labels:
+                  tier: vm-host
 
     # Alertmanager config
     alertmanager:

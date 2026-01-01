@@ -1,0 +1,20 @@
+---
+# NodePort service for external promtail clients (bare metal hosts)
+apiVersion: v1
+kind: Service
+metadata:
+  name: loki-external
+  namespace: observability
+  labels:
+    app.kubernetes.io/name: loki
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: 3100
+      targetPort: 3100
+      nodePort: 30100
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/component: single-binary

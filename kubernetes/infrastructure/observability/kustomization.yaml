@@ -7,3 +7,4 @@ resources:
   - namespace.yaml
   - kube-prometheus-stack.yaml
   - loki-stack.yaml
+  - loki-external.yaml

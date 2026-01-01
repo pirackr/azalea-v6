@@ -1,0 +1,29 @@
+---
+# Deploy observability agents (node_exporter + promtail) to all hosts
+#
+# Usage:
+#   ansible-playbook playbooks/observability.yml
+#
+# This playbook installs:
+#   - node_exporter: Exposes host metrics to Prometheus
+#   - promtail: Ships logs to Loki
+
+- name: Deploy observability agents
+  hosts: all
+  become: true
+
+  vars:
+    # Loki endpoint (via Tailscale to K8s NodePort)
+    promtail_loki_url: "http://sleepy-koala:30100/loki/api/v1/push"
+
+  roles:
+    - role: node_exporter
+    - role: promtail
+
+  post_tasks:
+    - name: Display agent status
+      ansible.builtin.debug:
+        msg: |
+          Observability agents deployed on {{ inventory_hostname }}:
+          - node_exporter: http://{{ inventory_hostname }}:9100/metrics
+          - promtail: Shipping logs to {{ promtail_loki_url }}

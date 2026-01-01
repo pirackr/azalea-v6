@@ -1,0 +1,20 @@
+---
+# Promtail defaults
+
+promtail_version: "3.3.2"
+promtail_user: promtail
+promtail_group: promtail
+
+# Loki push URL - use Tailscale hostname
+promtail_loki_url: "http://sleepy-koala:30100/loki/api/v1/push"
+
+# Log paths to scrape
+promtail_log_paths:
+  - job: system
+    paths:
+      - /var/log/syslog
+      - /var/log/auth.log
+      - /var/log/kern.log
+  - job: libvirt
+    paths:
+      - /var/log/libvirt/**/*.log
