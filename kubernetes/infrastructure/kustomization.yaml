@@ -2,9 +2,13 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
+  # Helm repositories (must be first)
+  - sources
+  # Core infrastructure
   - cloudflare-tunnel
+  # Observability stack
+  - observability
   # Future additions:
   # - controllers/traefik
   # - controllers/cert-manager
   # - storage/local-path
-  # - observability/prometheus

@@ -1,0 +1,107 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kube-prometheus-stack
+  namespace: observability
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: kube-prometheus-stack
+      version: "67.x"  # Latest 67.x version
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+        namespace: flux-system
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  values:
+    # Grafana config
+    grafana:
+      enabled: true
+      adminPassword: "admin"  # Change this or use a secret
+      persistence:
+        enabled: true
+        size: 5Gi
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      # Add Loki datasource
+      additionalDataSources:
+        - name: Loki
+          type: loki
+          url: http://loki.observability.svc:3100
+          access: proxy
+          isDefault: false
+
+    # Prometheus config
+    prometheus:
+      prometheusSpec:
+        retention: 7d
+        resources:
+          requests:
+            cpu: 200m
+            memory: 512Mi
+          limits:
+            cpu: 1000m
+            memory: 2Gi
+        storageSpec:
+          volumeClaimTemplate:
+            spec:
+              accessModes: ["ReadWriteOnce"]
+              resources:
+                requests:
+                  storage: 20Gi
+
+    # Alertmanager config
+    alertmanager:
+      alertmanagerSpec:
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        storage:
+          volumeClaimTemplate:
+            spec:
+              accessModes: ["ReadWriteOnce"]
+              resources:
+                requests:
+                  storage: 5Gi
+
+    # Disable components not needed for homelab
+    kubeEtcd:
+      enabled: false  # etcd metrics not accessible in kubeadm
+    kubeControllerManager:
+      enabled: false  # Not accessible by default
+    kubeScheduler:
+      enabled: false  # Not accessible by default
+    kubeProxy:
+      enabled: false  # Using Cilium, no kube-proxy
+
+    # Node exporter for host metrics
+    nodeExporter:
+      enabled: true
+
+    # Prometheus Operator
+    prometheusOperator:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
