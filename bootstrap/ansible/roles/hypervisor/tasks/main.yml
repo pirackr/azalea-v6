@@ -154,6 +154,15 @@
     - { regexp: '^#?group =', line: 'group = "{{ hypervisor_qemu_group }}"' }
   notify: Restart libvirtd
 
+# --- VM Autostart ---
+- name: Enable autostart for VMs
+  ansible.builtin.command: virsh autostart {{ item }}
+  loop: "{{ hypervisor_autostart_vms }}"
+  register: autostart_result
+  changed_when: "'marked as autostarted' in autostart_result.stdout"
+  failed_when: false
+  when: hypervisor_autostart_vms | length > 0
+
 # --- Verification ---
 - name: Get libvirt version
   ansible.builtin.command: virsh version --daemon

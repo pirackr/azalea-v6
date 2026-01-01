@@ -22,3 +22,6 @@ hypervisor_enable_nested_virt: true
 # QEMU settings
 hypervisor_qemu_user: libvirt-qemu
 hypervisor_qemu_group: kvm
+
+# VMs to autostart on host boot
+hypervisor_autostart_vms: []
