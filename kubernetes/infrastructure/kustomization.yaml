@@ -4,11 +4,9 @@ kind: Kustomization
 resources:
   # Helm repositories (must be first)
   - sources
+  # Ingress controller
+  - controllers
   # Core infrastructure
   - cloudflare-tunnel
   # Observability stack
   - observability
-  # Future additions:
-  # - controllers/traefik
-  # - controllers/cert-manager
-  # - storage/local-path
