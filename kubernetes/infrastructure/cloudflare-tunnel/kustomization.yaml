@@ -5,6 +5,7 @@ namespace: cloudflare-tunnel
 
 resources:
   - namespace.yaml
+  - secret.yaml
   - deployment.yaml
 
 labels:

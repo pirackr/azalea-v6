@@ -1,0 +1,7 @@
+# SOPS configuration for Kubernetes secrets
+# Only encrypts data and stringData fields, preserving metadata
+
+creation_rules:
+  - path_regex: .*secret.*\.yaml$
+    encrypted_regex: ^(data|stringData)$
+    age: age1gyjyj6vlv32rxxgsz5fdlfkgj92redq42nlhf798df9f05pcrgsqa0lx0u
