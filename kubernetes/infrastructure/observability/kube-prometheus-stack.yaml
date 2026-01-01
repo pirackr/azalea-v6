@@ -44,6 +44,41 @@ spec:
           url: http://loki.observability.svc:3100
           access: proxy
           isDefault: false
+      # Import dashboards from Grafana.com
+      dashboardProviders:
+        dashboardproviders.yaml:
+          apiVersion: 1
+          providers:
+            - name: 'grafana-dashboards'
+              orgId: 1
+              folder: 'Imported'
+              type: file
+              disableDeletion: false
+              editable: true
+              options:
+                path: /var/lib/grafana/dashboards/grafana-dashboards
+      dashboards:
+        grafana-dashboards:
+          # Node Exporter Full - comprehensive host metrics
+          node-exporter-full:
+            gnetId: 1860
+            revision: 37
+            datasource: Prometheus
+          # Node Exporter - simpler view
+          node-exporter:
+            gnetId: 11074
+            revision: 9
+            datasource: Prometheus
+          # Loki Logs Dashboard
+          loki-logs:
+            gnetId: 13639
+            revision: 2
+            datasource: Loki
+          # FluxCD Dashboard
+          fluxcd:
+            gnetId: 16714
+            revision: 1
+            datasource: Prometheus
 
     # Prometheus config
     prometheus:
