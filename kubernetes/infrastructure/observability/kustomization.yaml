@@ -8,3 +8,4 @@ resources:
   - kube-prometheus-stack.yaml
   - loki-stack.yaml
   - loki-external.yaml
+  - ingress.yaml
