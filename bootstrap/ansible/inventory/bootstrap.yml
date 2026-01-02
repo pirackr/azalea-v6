@@ -12,6 +12,8 @@ all:
           ansible_host: 192.168.4.150  # UPDATE: Your actual IP
         misty-bamboo:
           ansible_host: 192.168.4.151  # UPDATE: Your actual IP
+        lush-forest:
+          ansible_host: 192.168.4.153
 
   vars:
     ansible_python_interpreter: /usr/bin/python3
