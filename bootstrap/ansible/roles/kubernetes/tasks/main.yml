@@ -134,6 +134,20 @@
     - kubeadm
     - kubectl
 
+- name: Create kubelet config directory
+  ansible.builtin.file:
+    path: /etc/default
+    state: directory
+    mode: "0755"
+
+- name: Configure kubelet to use Tailscale IP as node-ip
+  ansible.builtin.copy:
+    content: |
+      KUBELET_EXTRA_ARGS=--node-ip={{ ansible_tailscale0.ipv4.address }}
+    dest: /etc/default/kubelet
+    mode: "0644"
+  notify: Restart kubelet
+
 - name: Enable kubelet service
   ansible.builtin.systemd:
     name: kubelet

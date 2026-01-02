@@ -12,6 +12,7 @@
     --pod-network-cidr={{ pod_network_cidr }}
     --service-cidr={{ service_cidr }}
     --control-plane-endpoint={{ control_plane_endpoint }}
+    --apiserver-advertise-address={{ ansible_tailscale0.ipv4.address }}
     --skip-phases=addon/kube-proxy
   when: not kubeadm_init_check.stat.exists
   register: kubeadm_init
