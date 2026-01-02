@@ -131,6 +131,7 @@ spec:
               - targets:
                   - 'golden-savanna:9100'
                   - 'misty-bamboo:9100'
+                  - 'lush-forest:9100'
                 labels:
                   tier: bare-metal
           - job_name: 'k8s-vm-hosts'
@@ -138,6 +139,10 @@ spec:
               - targets:
                   - 'sleepy-koala:9100'
                   - 'lazy-panda:9100'
+                  - 'chunky-wombat:9100'
+                  - 'fancy-penguin:9100'
+                  - 'grumpy-walrus:9100'
+                  - 'happy-dolphin:9100'
                 labels:
                   tier: vm-host
 
