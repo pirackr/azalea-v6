@@ -18,10 +18,12 @@ spec:
     crds: CreateReplace
     remediation:
       retries: 3
+    timeout: 10m
   upgrade:
     crds: CreateReplace
     remediation:
       retries: 3
+    timeout: 10m
   values:
     # Grafana config
     grafana:
