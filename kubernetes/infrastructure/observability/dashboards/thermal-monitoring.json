@@ -304,7 +304,7 @@
       "targets": [
         {
           "datasource": {"type": "prometheus", "uid": "prometheus"},
-          "expr": "node_hwmon_temp_celsius{chip=~\".*amdgpu.*\"}",
+          "expr": "node_hwmon_temp_celsius{chip=~\"0000:00:08.*\"}",
           "legendFormat": "{{instance}} GPU",
           "refId": "A"
         }
