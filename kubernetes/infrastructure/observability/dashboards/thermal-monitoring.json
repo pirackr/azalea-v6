@@ -51,7 +51,7 @@
       "targets": [
         {
           "datasource": {"type": "prometheus", "uid": "prometheus"},
-          "expr": "node_hwmon_temp_celsius{instance=~\"golden-savanna.*\", chip=~\".*k10temp.*\"}",
+          "expr": "node_hwmon_temp_celsius{instance=~\"golden-savanna.*\", chip=~\"pci0000.*\"}",
           "legendFormat": "CPU",
           "refId": "A"
         }
@@ -95,7 +95,7 @@
       "targets": [
         {
           "datasource": {"type": "prometheus", "uid": "prometheus"},
-          "expr": "node_hwmon_temp_celsius{instance=~\"misty-bamboo.*\", chip=~\".*k10temp.*|.*coretemp.*\"}",
+          "expr": "node_hwmon_temp_celsius{instance=~\"misty-bamboo.*\", chip=~\"pci0000.*\"}",
           "legendFormat": "CPU",
           "refId": "A"
         }
@@ -139,7 +139,7 @@
       "targets": [
         {
           "datasource": {"type": "prometheus", "uid": "prometheus"},
-          "expr": "node_hwmon_temp_celsius{instance=~\"lush-forest.*\", chip=~\".*k10temp.*|.*coretemp.*\"}",
+          "expr": "node_hwmon_temp_celsius{instance=~\"lush-forest.*\", chip=~\"pci0000.*\"}",
           "legendFormat": "CPU",
           "refId": "A"
         }
@@ -196,7 +196,7 @@
       "targets": [
         {
           "datasource": {"type": "prometheus", "uid": "prometheus"},
-          "expr": "node_hwmon_temp_celsius{chip=~\".*k10temp.*|.*coretemp.*\"}",
+          "expr": "node_hwmon_temp_celsius{chip=~\"pci0000.*\"}",
           "legendFormat": "{{instance}} CPU",
           "refId": "A"
         }
@@ -364,6 +364,60 @@
         }
       ],
       "title": "Power Usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {"legend": false, "tooltip": false, "viz": false},
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {"type": "linear"},
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {"group": "A", "mode": "none"},
+            "thresholdsStyle": {"mode": "off"}
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{"color": "green", "value": null}]
+          },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 30},
+      "id": 8,
+      "options": {
+        "legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "expr": "node_hwmon_temp_celsius{chip=~\"thermal_thermal_zone.*\", sensor=\"temp0\"}",
+          "legendFormat": "{{instance}} WiFi",
+          "refId": "A"
+        }
+      ],
+      "title": "WiFi Temperature",
       "type": "timeseries"
     }
   ],
