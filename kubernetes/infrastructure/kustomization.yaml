@@ -4,6 +4,8 @@ kind: Kustomization
 resources:
   # Helm repositories (must be first)
   - sources
+  # Storage (needed for PVCs)
+  - storage
   # Ingress controller
   - controllers
   # Core infrastructure
