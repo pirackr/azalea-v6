@@ -56,14 +56,14 @@ spec:
           livenessProbe:
             httpGet:
               path: /
-              port: http
+              port: http-initial
             initialDelaySeconds: 30
             periodSeconds: 10
             failureThreshold: 5
           readinessProbe:
             httpGet:
               path: /
-              port: http
+              port: http-initial
             initialDelaySeconds: 10
             periodSeconds: 5
       volumes:
