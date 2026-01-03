@@ -24,12 +24,13 @@ resource "libvirt_cloudinit_disk" "init" {
   network_config = file("${path.module}/templates/network-config.yaml")
 }
 
-# Base volume from source image
+# Base volume from source image in pool
 resource "libvirt_volume" "base" {
-  name   = "${var.name}-base.qcow2"
-  pool   = var.pool_name
-  source = var.source_image
-  format = "qcow2"
+  name             = "${var.name}-base.qcow2"
+  pool             = var.pool_name
+  base_volume_name = var.base_volume_name
+  base_volume_pool = var.pool_name
+  format           = "qcow2"
 }
 
 # VM disk (cloned from base with larger size for growpart)

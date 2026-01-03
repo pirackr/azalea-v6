@@ -15,11 +15,11 @@ Home lab infrastructure - Kubernetes on bare metal with VMs.
 | VM | RAM | vCPU | Disk | Role | Host |
 |----|-----|------|------|------|------|
 | `sleepy-koala` | 8GB | 4 | 80GB | K8s control-plane | golden-savanna |
-| `lazy-panda` | 16GB | 4 | 70GB | K8s worker | golden-savanna |
-| `chunky-wombat` | 16GB | 4 | 70GB | K8s worker | misty-bamboo |
-| `fancy-penguin` | 16GB | 4 | 70GB | K8s worker | misty-bamboo |
-| `grumpy-walrus` | 16GB | 4 | 70GB | K8s worker | lush-forest |
-| `happy-dolphin` | 16GB | 4 | 70GB | K8s worker | lush-forest |
+| `lazy-panda` | 20GB | 8 | 200GB | K8s worker | golden-savanna |
+| `chunky-wombat` | 14GB | 4 | 100GB | K8s worker | misty-bamboo |
+| `fancy-penguin` | 14GB | 4 | 100GB | K8s worker | misty-bamboo |
+| `grumpy-walrus` | 14GB | 4 | 70GB | K8s worker | lush-forest |
+| `happy-dolphin` | 14GB | 4 | 70GB | K8s worker | lush-forest |
 
 ## Complete Setup Guide
 

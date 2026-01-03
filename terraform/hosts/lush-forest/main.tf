@@ -46,7 +46,7 @@ variable "tailscale_authkey" {
 }
 
 locals {
-  ubuntu_image = "file:///home/pirackr/Working/azalea-v6/terraform/images/ubuntu-24.04-server-cloudimg-amd64.img"
+  base_volume = "ubuntu-24.04-server-cloudimg-amd64.img"
 }
 
 # grumpy-walrus - K8s worker
@@ -54,10 +54,10 @@ module "grumpy_walrus" {
   source = "../../modules/vm"
 
   name         = "grumpy-walrus"
-  vcpu         = 4
-  memory       = 16384  # 16GB
-  disk_size    = 70 * 1024 * 1024 * 1024  # 70GB
-  source_image = local.ubuntu_image
+  vcpu         = 2 
+  memory       = 14336  # 14GB
+  disk_size    = 100 * 1024 * 1024 * 1024  # 70GB
+  base_volume_name = local.base_volume
 
   ssh_public_key    = var.ssh_public_key
   tailscale_authkey = var.tailscale_authkey
@@ -68,10 +68,10 @@ module "happy_dolphin" {
   source = "../../modules/vm"
 
   name         = "happy-dolphin"
-  vcpu         = 4
-  memory       = 16384  # 16GB
-  disk_size    = 70 * 1024 * 1024 * 1024  # 70GB
-  source_image = local.ubuntu_image
+  vcpu         = 2 
+  memory       = 14336  # 14GB
+  disk_size    = 100 * 1024 * 1024 * 1024  # 70GB
+  base_volume_name = local.base_volume
 
   ssh_public_key    = var.ssh_public_key
   tailscale_authkey = var.tailscale_authkey

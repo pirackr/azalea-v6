@@ -46,7 +46,7 @@ variable "tailscale_authkey" {
 }
 
 locals {
-  ubuntu_image = "file:///home/pirackr/Working/azalea-v6/terraform/images/ubuntu-24.04-server-cloudimg-amd64.img"
+  base_volume = "ubuntu-24.04-server-cloudimg-amd64.img"
 }
 
 # sleepy-koala - K8s control plane
@@ -57,7 +57,7 @@ module "sleepy_koala" {
   vcpu         = 4
   memory       = 8192  # 8GB
   disk_size    = 80 * 1024 * 1024 * 1024  # 80GB
-  source_image = local.ubuntu_image
+  base_volume_name = local.base_volume
 
   ssh_public_key    = var.ssh_public_key
   tailscale_authkey = var.tailscale_authkey
@@ -69,9 +69,9 @@ module "lazy_panda" {
 
   name         = "lazy-panda"
   vcpu         = 8
-  memory       = 24576  # 24GB
+  memory       = 20480  # 20GB
   disk_size    = 200 * 1024 * 1024 * 1024  # 200GB
-  source_image = local.ubuntu_image
+  base_volume_name = local.base_volume
 
   ssh_public_key    = var.ssh_public_key
   tailscale_authkey = var.tailscale_authkey

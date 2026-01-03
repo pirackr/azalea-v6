@@ -122,6 +122,24 @@
   changed_when: true
   failed_when: false
 
+# --- Base VM Image ---
+- name: Check if base image exists
+  ansible.builtin.stat:
+    path: "{{ hypervisor_pool_path }}/{{ hypervisor_base_image_name }}"
+  register: base_image_check
+
+- name: Download base VM image
+  ansible.builtin.get_url:
+    url: "{{ hypervisor_base_image_url }}"
+    dest: "{{ hypervisor_pool_path }}/{{ hypervisor_base_image_name }}"
+    mode: "0644"
+  when: not base_image_check.stat.exists
+
+- name: Refresh storage pool to register image
+  ansible.builtin.command: virsh pool-refresh {{ hypervisor_pool_name }}
+  changed_when: true
+  when: not base_image_check.stat.exists
+
 # --- Default Network ---
 - name: Check if default network exists
   ansible.builtin.command: virsh net-info {{ hypervisor_network_name }}

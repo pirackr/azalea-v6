@@ -17,8 +17,8 @@ variable "memory" {
   default     = 2048
 }
 
-variable "source_image" {
-  description = "Path to source image (file:// URL)"
+variable "base_volume_name" {
+  description = "Name of the base volume in the libvirt pool to clone from"
   type        = string
 }
 
