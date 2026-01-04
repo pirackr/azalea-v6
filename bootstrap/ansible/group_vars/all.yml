@@ -1,0 +1,6 @@
+---
+# Enable RAPL power metrics across all nodes.
+node_exporter_enabled_collectors:
+  - rapl
+node_exporter_additional_groups:
+  - powercap

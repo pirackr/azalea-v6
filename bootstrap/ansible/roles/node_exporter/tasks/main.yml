@@ -33,6 +33,39 @@
         create_home: false
         state: present
 
+    - name: Ensure powercap group exists
+      ansible.builtin.group:
+        name: "{{ node_exporter_powercap_group }}"
+        system: true
+        state: present
+      when: node_exporter_powercap_enable
+
+    - name: Add node_exporter user to powercap group
+      ansible.builtin.user:
+        name: "{{ node_exporter_user }}"
+        groups: "{{ node_exporter_additional_groups + [node_exporter_powercap_group] }}"
+        append: true
+      when: node_exporter_powercap_enable
+
+    - name: Allow powercap energy reads for powercap group
+      ansible.builtin.copy:
+        dest: /etc/udev/rules.d/99-powercap.rules
+        mode: "0644"
+        content: |
+          SUBSYSTEM=="powercap", RUN+="/bin/chgrp {{ node_exporter_powercap_group }} /sys/class/powercap/%k/energy_uj"
+          SUBSYSTEM=="powercap", RUN+="/bin/chmod 0640 /sys/class/powercap/%k/energy_uj"
+      when: node_exporter_powercap_enable
+
+    - name: Reload udev rules for powercap
+      ansible.builtin.command: udevadm control --reload-rules
+      when: node_exporter_powercap_enable
+      changed_when: false
+
+    - name: Trigger powercap udev rules
+      ansible.builtin.command: udevadm trigger --subsystem-match=powercap
+      when: node_exporter_powercap_enable
+      changed_when: false
+
     - name: Download node_exporter
       ansible.builtin.get_url:
         url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"

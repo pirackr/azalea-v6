@@ -9,6 +9,13 @@ node_exporter_group: node_exporter
 # Collectors to enable (empty = defaults)
 node_exporter_enabled_collectors: []
 
+# Extra groups to add to the node_exporter user
+node_exporter_additional_groups: []
+
+# Powercap (RAPL) permissions
+node_exporter_powercap_enable: true
+node_exporter_powercap_group: powercap
+
 # Collectors to disable
 node_exporter_disabled_collectors:
   - infiniband

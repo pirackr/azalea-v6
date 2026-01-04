@@ -1,8 +1,0 @@
----
-# Enable power metrics via RAPL on misty-bamboo.
-node_exporter_enabled_collectors:
-  - rapl
-
-# RAPL sysfs files are root-only on this host.
-node_exporter_user: root
-node_exporter_group: root
