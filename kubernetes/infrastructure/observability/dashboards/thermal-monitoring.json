@@ -304,13 +304,13 @@
       "targets": [
         {
           "datasource": {"type": "prometheus", "uid": "prometheus"},
-          "expr": "max by (instance) (node_hwmon_temp_celsius{chip=~\"0000:00:08.*|amdgpu.*|radeon.*|nouveau.*|i915.*\"})",
+          "expr": "max by (instance) (node_hwmon_temp_celsius{chip=~\"0000:00:08.*|amdgpu.*|radeon.*|nouveau.*|i915.*\"}) or max by (instance) (node_thermal_zone_temp{type=~\"pch_.*|x86_pkg_temp\"})",
           "legendFormat": "{{instance}} GPU",
           "refId": "A"
         }
       ],
-      "description": "GPU temps appear only when GPU sensors are exported by node_exporter.",
-      "title": "GPU Temperature",
+      "description": "Shows GPU temps when available; falls back to chipset/package thermal zones on systems without GPU sensors.",
+      "title": "GPU / SoC Temperature",
       "type": "timeseries"
     },
     {
