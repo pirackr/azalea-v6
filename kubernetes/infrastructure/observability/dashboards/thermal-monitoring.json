@@ -358,7 +358,7 @@
       "targets": [
         {
           "datasource": {"type": "prometheus", "uid": "prometheus"},
-          "expr": "max by (instance) (node_hwmon_power_watt) or sum by (instance) (rate(node_rapl_energy_joules[5m]))",
+          "expr": "max by (instance) (node_hwmon_power_watt) or sum by (instance) (rate(node_rapl_package_joules_total[5m]))",
           "legendFormat": "{{instance}} Power",
           "refId": "A"
         }
