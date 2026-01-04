@@ -64,15 +64,33 @@
   when: "'clusterCIDR: \"\"' in kube_proxy_conf.stdout"
   become: false
 
+- name: Ensure kube-proxy API server endpoint is the control plane endpoint
+  ansible.builtin.shell: |
+    set -euo pipefail
+    kubectl -n kube-system get configmap kube-proxy -o json | python - <<'PY'
+    import json,sys,re
+    cm=json.load(sys.stdin)
+    cfg=cm["data"]["kubeconfig.conf"]
+    cfg=re.sub(r"server:\\s+https://[^\\s]+", "server: https://{{ control_plane_endpoint }}:6443", cfg)
+    cm["data"]["kubeconfig.conf"]=cfg
+    print(json.dumps(cm))
+    PY
+  environment:
+    KUBECONFIG: "{{ kubeconfig_dir }}/config"
+  register: kube_proxy_endpoint_patch
+  changed_when: kube_proxy_endpoint_patch.rc == 0
+  when: "'kubeconfig.conf' in kube_proxy_conf.stdout and (control_plane_endpoint not in kube_proxy_conf.stdout)"
+  become: false
+
 - name: Apply kube-proxy config
   ansible.builtin.command: kubectl apply -f -
   environment:
     KUBECONFIG: "{{ kubeconfig_dir }}/config"
   args:
-    stdin: "{{ kube_proxy_patch.stdout }}"
+    stdin: "{{ (kube_proxy_endpoint_patch.stdout if (kube_proxy_endpoint_patch is defined and kube_proxy_endpoint_patch is changed) else kube_proxy_patch.stdout) }}"
   register: kube_proxy_apply
   changed_when: kube_proxy_apply.rc == 0
-  when: kube_proxy_patch is changed
+  when: (kube_proxy_patch is changed) or (kube_proxy_endpoint_patch is defined and kube_proxy_endpoint_patch is changed)
   become: false
 
 - name: Restart kube-proxy pods after config change
