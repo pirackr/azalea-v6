@@ -4,6 +4,5 @@ kind: Kustomization
 resources:
   - calibre-web
   - adguard-home
-  # Future additions:
-  # - home-assistant
+  - home-assistant
   # - jellyfin
