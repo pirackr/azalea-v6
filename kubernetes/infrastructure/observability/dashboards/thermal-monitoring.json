@@ -139,7 +139,7 @@
       "targets": [
         {
           "datasource": {"type": "prometheus", "uid": "prometheus"},
-          "expr": "node_hwmon_temp_celsius{instance=~\"lush-forest.*\", chip=~\"pci0000.*\"}",
+          "expr": "max by (instance) (node_hwmon_temp_celsius{instance=~\"lush-forest.*\", chip=~\"pci0000.*|platform_coretemp_0|coretemp.*\"})",
           "legendFormat": "CPU",
           "refId": "A"
         }
@@ -359,7 +359,7 @@
       "targets": [
         {
           "datasource": {"type": "prometheus", "uid": "prometheus"},
-          "expr": "max by (instance) (node_hwmon_power_watt) or sum by (instance) (rate(node_rapl_package_joules_total[5m]))",
+          "expr": "sum by (instance) (rate(node_rapl_package_joules_total[5m]))",
           "legendFormat": "{{instance}} Power",
           "refId": "A"
         }
