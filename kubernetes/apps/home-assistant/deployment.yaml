@@ -17,6 +17,37 @@ spec:
       labels:
         app.kubernetes.io/name: home-assistant
     spec:
+      initContainers:
+        - name: init-config
+          image: alpine:3.20
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              if [ ! -f /config/configuration.yaml ]; then
+                cat > /config/configuration.yaml <<'EOF'
+              http:
+                use_x_forwarded_for: true
+                trusted_proxies:
+                  - 10.244.0.0/16
+                  - 10.96.0.0/12
+                  - 100.64.0.0/10
+              EOF
+              elif ! grep -q "trusted_proxies" /config/configuration.yaml; then
+                cat >> /config/configuration.yaml <<'EOF'
+
+              http:
+                use_x_forwarded_for: true
+                trusted_proxies:
+                  - 10.244.0.0/16
+                  - 10.96.0.0/12
+                  - 100.64.0.0/10
+              EOF
+              fi
+          volumeMounts:
+            - name: config
+              mountPath: /config
       containers:
         - name: home-assistant
           image: ghcr.io/home-assistant/home-assistant:stable
