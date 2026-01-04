@@ -304,7 +304,7 @@
       "targets": [
         {
           "datasource": {"type": "prometheus", "uid": "prometheus"},
-          "expr": "max by (instance) (node_hwmon_temp_celsius{chip=~\"0000:00:08.*|amdgpu.*|radeon.*|nouveau.*|i915.*\"})",
+          "expr": "max by (instance) (node_hwmon_temp_celsius{chip=~\"0000:00:08.*|amdgpu.*|radeon.*|nouveau.*|i915.*\"}) or max by (instance) (node_thermal_zone_temp{instance=~\"misty-bamboo.*\", type=~\"pch_skylake\"})",
           "legendFormat": "{{instance}} GPU",
           "refId": "A"
         }
@@ -358,7 +358,7 @@
       "targets": [
         {
           "datasource": {"type": "prometheus", "uid": "prometheus"},
-          "expr": "max by (instance) (node_hwmon_power_watt)",
+          "expr": "max by (instance) (node_hwmon_power_watt) or sum by (instance) (rate(node_rapl_energy_joules[5m]))",
           "legendFormat": "{{instance}} Power",
           "refId": "A"
         }

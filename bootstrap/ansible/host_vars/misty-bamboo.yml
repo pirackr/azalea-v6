@@ -1,0 +1,4 @@
+---
+# Enable power metrics via RAPL on misty-bamboo.
+node_exporter_enabled_collectors:
+  - rapl
