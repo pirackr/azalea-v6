@@ -1,6 +1,11 @@
 ---
 # Control plane configuration
-control_plane_endpoint: "{{ ansible_hostname }}"
+# Prefer the Tailscale IP so kube-proxy and in-cluster clients hit a cert-valid endpoint.
+control_plane_endpoint: "{{ ansible_tailscale0.ipv4.address | default(ansible_hostname) }}"
+
+# Extra API server SANs (optional, adds control plane endpoint by default).
+apiserver_cert_extra_sans:
+  - "{{ control_plane_endpoint }}"
 
 # Pod network CIDR (must match CNI)
 pod_network_cidr: "10.244.0.0/16"
