@@ -1,27 +1,10 @@
-# Azalea v6 - AI Context
+# CLAUDE.md
 
-> This file provides context for AI assistants working on this project.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
-Azalea v6 is a home lab infrastructure project designed for:
-- Self-hosting applications (Home Assistant, Jellyfin, AdGuard Home, etc.)
-- Learning Kubernetes and infrastructure as code
-- Scalable from 1 node to multi-node cluster
-- Hybrid-ready (can burst to cloud)
-
-## Current Phase
-
-**Phase 0: Foundation** (COMPLETE)
-- [x] Project structure created
-- [x] flake.nix with dev tools
-- [x] CLAUDE.md (this file)
-- [x] Architecture documentation
-
-**Next: Phase 1 - Host Setup**
-- Ansible roles for bare metal hosts
-- KVM/libvirt installation
-- Tailscale mesh setup
+Azalea v6 is a home lab Kubernetes infrastructure project with VMs on bare metal hosts. Uses GitOps (FluxCD) for declarative cluster management.
 
 ## Hardware
 
@@ -32,109 +15,110 @@ Azalea v6 is a home lab infrastructure project designed for:
 | `lush-rainforest` | 4c/8t, 32GB, 256GB SSD | Worker (scale-up) |
 | `wild-outback` | 16c/32t, 128GB | Burst (temporary) |
 
-## K8s VMs (on 2 nodes initially)
+## K8s VMs (Animals)
 
-| VM | Role | RAM | vCPU | Disk | Host |
-|----|------|-----|------|------|------|
-| `sleepy-koala` | K8s control | 8GB | 4 | 80GB | golden-savanna |
-| `lazy-panda` | K8s worker | 24GB | 8 | 200GB | golden-savanna |
-| `chunky-wombat` | K8s worker | 16GB | 4 | 100GB | misty-bamboo |
-| `fancy-penguin` | K8s worker | 16GB | 4 | 100GB | misty-bamboo |
+| VM | Role | Host |
+|----|------|------|
+| `sleepy-koala` | K8s control-plane | golden-savanna |
+| `lazy-panda` | K8s worker | golden-savanna |
+| `chunky-wombat` | K8s worker | misty-bamboo |
+| `fancy-penguin` | K8s worker | misty-bamboo |
+| `grumpy-walrus` | K8s worker | lush-forest |
+| `happy-dolphin` | K8s worker | lush-forest |
 
 ## Naming Convention
 
-**Theme**: Zoo (Habitats contain Animals)
-
-- **Bare metal** = Habitats: `golden-savanna`, `misty-bamboo`, `lush-rainforest`
-- **VMs** = Animals: `sleepy-koala`, `lazy-panda`, `chunky-wombat`, `fancy-penguin`
-- **K8s namespaces** = Zoo sections: `sanctuary`, `petting-zoo`, `aquatic`, `nocturnal`
+**Theme**: Zoo - Bare metal = Habitats, VMs = Animals
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|------------|
 | Base OS | Ubuntu Server 24.04 |
+| Virtualization | KVM/libvirt |
 | Orchestration | Kubernetes (kubeadm) |
-| CNI | Cilium |
+| CNI | Flannel (VXLAN over Tailscale) |
 | GitOps | FluxCD |
 | Ingress | Traefik |
 | External Access | Cloudflare Tunnel |
 | Mesh Network | Tailscale |
 | Secrets | SOPS + age |
+| IaC | OpenTofu (Terraform), Ansible |
 
-## Directory Structure
-
-```
-azalea-v6/
-├── flake.nix                 # Nix dev environment
-├── CLAUDE.md                 # This file (AI context)
-├── docs/
-│   └── ARCHITECTURE.md       # Full architecture spec
-│
-├── bootstrap/                # One-time node setup
-│   ├── ansible/              # Ansible playbooks & roles
-│   │   ├── inventory/        # Host definitions
-│   │   ├── playbooks/        # Main playbooks
-│   │   └── roles/            # Reusable roles
-│   └── scripts/              # Shell scripts
-│
-├── kubernetes/
-│   ├── clusters/homelab/     # Cluster-specific config
-│   ├── infrastructure/       # Cluster-wide infra
-│   │   ├── controllers/      # Ingress, certs, etc.
-│   │   ├── networking/       # Network policies
-│   │   ├── storage/          # Storage classes
-│   │   └── observability/    # Monitoring
-│   └── apps/                 # User applications
-│
-├── terraform/cloudflare/     # Cloud resources
-└── secrets/                  # SOPS-encrypted secrets
-```
-
-## Key Commands
+## Commands
 
 ```bash
-# Enter dev environment
+# Enter dev environment (required first)
 nix develop
 
-# Kubernetes
+# --- Kubernetes / Flux ---
+export KUBECONFIG=~/.kube/config-azalea
+kubectl get nodes
 kubectl get pods -A
-k9s
-flux check
+k9s                                        # Terminal UI
+flux check                                 # Verify FluxCD health
+flux get all                               # View all Flux resources
+flux reconcile kustomization apps --with-source    # Force sync apps
+flux reconcile kustomization infrastructure --with-source
 
-# Ansible
-cd bootstrap/ansible
-ansible-playbook playbooks/site.yml
+# --- Ansible (from bootstrap/ansible/) ---
+# Bootstrap new bare metal host (first time, with password)
+ansible-playbook -i inventory/bootstrap.yml playbooks/bootstrap.yml --limit <host> -u <user> -kK
 
-# Secrets
-sops secrets/cluster-secrets.yaml
+# Configure hypervisor
+ansible-playbook -i inventory/hosts.yml playbooks/site.yml --limit <host> --tags hypervisor
+
+# Deploy/update K8s cluster
+ansible-playbook -i inventory/hosts.yml playbooks/kubernetes.yml
+
+# Add new workers only
+ansible-playbook -i inventory/hosts.yml playbooks/kubernetes.yml --limit <workers> --tags kubernetes,prerequisites,workers
+
+# Install observability agents
+ansible-playbook -i inventory/hosts.yml playbooks/observability.yml
+
+# --- Terraform / OpenTofu (from terraform/) ---
+./deploy.sh <host> init     # Initialize (golden-savanna, misty-bamboo, lush-forest)
+./deploy.sh <host> plan     # Preview VM changes
+./deploy.sh <host> apply    # Create/update VMs
+./deploy.sh <host> destroy  # Destroy VMs
+
+# --- Secrets ---
+sops <file>.yaml            # Edit encrypted file
+sops -d <file>.yaml         # Decrypt to stdout
+./bootstrap/scripts/decrypt-key.sh  # Decrypt SSH deploy key
 ```
 
-## Design Principles
+## Architecture
 
-1. **Start Small**: Everything works on 1 node
-2. **Scale Gracefully**: Add nodes without reconfiguration
-3. **Loosely Coupled**: Each component independent
-4. **Hardened by Default**: Security not an afterthought
-5. **GitOps Native**: All state in Git, declarative
-6. **Zero Hardcoded IPs**: Use hostnames via Tailscale
-7. **Hybrid-Ready**: Can burst to cloud when needed
+### Network Flow
+Internet → Cloudflare Tunnel → Traefik (Ingress) → K8s Services
 
-## Network Architecture
+### Connectivity
+- **Tailscale**: All hosts/VMs addressable by hostname (no hardcoded IPs)
+- **K8s CNI**: Flannel with `--iface=tailscale0` (pod network 10.244.0.0/16)
 
-- **Physical**: DHCP from router (we don't care about these IPs)
-- **Tailscale**: Auto-assigned 100.x.x.x, hostname-addressable
-- **K8s CNI**: Cilium handles pod networking (10.244.0.0/16)
-- **Ingress**: Internet → Cloudflare Tunnel → Traefik → Services
+### GitOps Flow
+1. Edit manifests in `kubernetes/` directory
+2. Commit and push to git
+3. FluxCD auto-reconciles (or force with `flux reconcile`)
 
-## Important Notes
+### Adding New Apps
+1. Create manifests in `kubernetes/apps/<app-name>/`
+2. Add to `kubernetes/apps/kustomization.yaml`
+3. Commit, push, and Flux deploys automatically
 
-- No VLANs currently (flat network)
-- Pure Tailscale for node/VM connectivity
-- SSDs only (~1.25TB total), no HDDs yet
-- Jellyfin deferred until storage available
+### Adding New Hosts/Workers
+1. Bootstrap bare metal: `ansible-playbook ... playbooks/bootstrap.yml`
+2. Configure hypervisor: `ansible-playbook ... playbooks/site.yml --tags hypervisor`
+3. Provision VMs: `./deploy.sh <host> apply`
+4. Join K8s: `ansible-playbook ... playbooks/kubernetes.yml --limit <workers>`
+5. Update Prometheus targets in `kubernetes/infrastructure/observability/`
 
-## References
+## Key Files
 
-- Full spec: `docs/ARCHITECTURE.md`
-- Plan file: `~/.claude/plans/cryptic-sauteeing-rose.md`
+- `bootstrap/ansible/inventory/hosts.yml` - Production host inventory
+- `kubernetes/infrastructure/kustomization.yaml` - Infrastructure components
+- `kubernetes/apps/kustomization.yaml` - Application deployments
+- `terraform/hosts/<hostname>/` - Per-host VM definitions
+- `secrets/` - SOPS-encrypted secrets (age key at `~/.config/sops/age/keys.txt`)

@@ -1,6 +1,6 @@
 ---
 # Kubernetes Cluster Deployment Playbook
-# Deploys a K8s cluster using kubeadm with Cilium CNI
+# Deploys a K8s cluster using kubeadm with Flannel CNI
 
 # --- Install Kubernetes prerequisites on all nodes ---
 - name: Install Kubernetes prerequisites
@@ -18,13 +18,13 @@
     - role: ../roles/k8s-control-plane
       tags: [kubernetes, control-plane]
 
-# --- Install Cilium CNI ---
-- name: Install Cilium CNI
+# --- Install Flannel CNI ---
+- name: Install Flannel CNI
   hosts: k8s_control_plane
   become: true
   roles:
-    - role: ../roles/cilium
-      tags: [kubernetes, cilium, cni]
+    - role: ../roles/flannel
+      tags: [kubernetes, flannel, cni]
 
 # --- Join worker nodes ---
 - name: Join worker nodes to cluster

@@ -1,0 +1,11 @@
+---
+# Flannel CNI configuration
+
+# Flannel manifest URL
+flannel_manifest_url: "https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml"
+
+# Interface to use for VXLAN (tailscale0 for Tailscale mesh)
+flannel_iface: "tailscale0"
+
+# Pod CIDR (must match kubeadm --pod-network-cidr)
+flannel_pod_cidr: "10.244.0.0/16"
