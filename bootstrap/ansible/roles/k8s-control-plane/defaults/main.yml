@@ -13,5 +13,8 @@ pod_network_cidr: "10.244.0.0/16"
 # Service CIDR
 service_cidr: "10.96.0.0/12"
 
+# kube-proxy cluster CIDR (defaults to pod network CIDR)
+kube_proxy_cluster_cidr: "{{ pod_network_cidr }}"
+
 # kubeconfig location
 kubeconfig_dir: "/home/deploy/.kube"

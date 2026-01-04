@@ -36,6 +36,53 @@
     group: deploy
     mode: "0600"
 
+- name: Read kube-proxy config
+  ansible.builtin.command: >
+    kubectl get configmap -n kube-system kube-proxy
+    -o jsonpath='{.data.config\.conf}'
+  environment:
+    KUBECONFIG: "{{ kubeconfig_dir }}/config"
+  register: kube_proxy_conf
+  changed_when: false
+  become: false
+
+- name: Ensure kube-proxy cluster CIDR is set
+  ansible.builtin.shell: |
+    set -euo pipefail
+    kubectl -n kube-system get configmap kube-proxy -o json | python - <<'PY'
+    import json,sys
+    cm=json.load(sys.stdin)
+    cfg=cm["data"]["config.conf"]
+    cfg=cfg.replace('clusterCIDR: ""', 'clusterCIDR: "{{ kube_proxy_cluster_cidr }}"')
+    cm["data"]["config.conf"]=cfg
+    print(json.dumps(cm))
+    PY
+  environment:
+    KUBECONFIG: "{{ kubeconfig_dir }}/config"
+  register: kube_proxy_patch
+  changed_when: kube_proxy_patch.rc == 0
+  when: "'clusterCIDR: \"\"' in kube_proxy_conf.stdout"
+  become: false
+
+- name: Apply kube-proxy config
+  ansible.builtin.command: kubectl apply -f -
+  environment:
+    KUBECONFIG: "{{ kubeconfig_dir }}/config"
+  args:
+    stdin: "{{ kube_proxy_patch.stdout }}"
+  register: kube_proxy_apply
+  changed_when: kube_proxy_apply.rc == 0
+  when: kube_proxy_patch is changed
+  become: false
+
+- name: Restart kube-proxy pods after config change
+  ansible.builtin.command: kubectl delete pod -n kube-system -l k8s-app=kube-proxy
+  environment:
+    KUBECONFIG: "{{ kubeconfig_dir }}/config"
+  when: kube_proxy_apply is changed
+  changed_when: false
+  become: false
+
 - name: Generate join command
   ansible.builtin.command: kubeadm token create --print-join-command
   register: join_command
