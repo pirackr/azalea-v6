@@ -95,7 +95,7 @@
       "targets": [
         {
           "datasource": {"type": "prometheus", "uid": "prometheus"},
-          "expr": "node_hwmon_temp_celsius{instance=~\"misty-bamboo.*\", chip=~\"pci0000.*\"}",
+          "expr": "node_hwmon_temp_celsius{instance=~\"misty-bamboo.*\", chip=~\"pci0000.*|platform_coretemp_0|coretemp.*\"}",
           "legendFormat": "CPU",
           "refId": "A"
         }
@@ -196,7 +196,7 @@
       "targets": [
         {
           "datasource": {"type": "prometheus", "uid": "prometheus"},
-          "expr": "node_hwmon_temp_celsius{chip=~\"pci0000.*\"}",
+          "expr": "node_hwmon_temp_celsius{chip=~\"pci0000.*|platform_coretemp_0|coretemp.*\"}",
           "legendFormat": "{{instance}} CPU",
           "refId": "A"
         }
