@@ -358,8 +358,8 @@
       "targets": [
         {
           "datasource": {"type": "prometheus", "uid": "prometheus"},
-          "expr": "node_hwmon_power_watt",
-          "legendFormat": "{{instance}} {{label}}",
+          "expr": "max by (instance) (node_hwmon_power_watt)",
+          "legendFormat": "{{instance}} Power",
           "refId": "A"
         }
       ],
@@ -412,7 +412,7 @@
       "targets": [
         {
           "datasource": {"type": "prometheus", "uid": "prometheus"},
-          "expr": "node_hwmon_temp_celsius{chip=~\"thermal_thermal_zone.*\", sensor=\"temp0\"}",
+          "expr": "max by (instance) (node_hwmon_temp_celsius{chip=~\"thermal_thermal_zone.*\"})",
           "legendFormat": "{{instance}} WiFi",
           "refId": "A"
         }
