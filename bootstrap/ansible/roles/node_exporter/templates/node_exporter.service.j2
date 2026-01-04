@@ -12,6 +12,9 @@ ExecStart=/usr/local/bin/node_exporter \
 {% for collector in node_exporter_disabled_collectors %}
     --no-collector.{{ collector }} \
 {% endfor %}
+{% if node_exporter_powercap_enable %}
+    --collector.rapl \
+{% endif %}
 {% for collector in node_exporter_enabled_collectors %}
     --collector.{{ collector }} \
 {% endfor %}
