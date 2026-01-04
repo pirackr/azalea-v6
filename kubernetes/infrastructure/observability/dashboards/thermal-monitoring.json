@@ -95,7 +95,7 @@
       "targets": [
         {
           "datasource": {"type": "prometheus", "uid": "prometheus"},
-          "expr": "node_hwmon_temp_celsius{instance=~\"misty-bamboo.*\", chip=~\"pci0000.*|platform_coretemp_0|coretemp.*\"}",
+          "expr": "max by (instance) (node_hwmon_temp_celsius{instance=~\"misty-bamboo.*\", chip=~\"pci0000.*|platform_coretemp_0|coretemp.*\"})",
           "legendFormat": "CPU",
           "refId": "A"
         }
@@ -196,7 +196,7 @@
       "targets": [
         {
           "datasource": {"type": "prometheus", "uid": "prometheus"},
-          "expr": "node_hwmon_temp_celsius{chip=~\"pci0000.*|platform_coretemp_0|coretemp.*\"}",
+          "expr": "max by (instance) (node_hwmon_temp_celsius{chip=~\"pci0000.*|platform_coretemp_0|coretemp.*\"})",
           "legendFormat": "{{instance}} CPU",
           "refId": "A"
         }
@@ -304,7 +304,7 @@
       "targets": [
         {
           "datasource": {"type": "prometheus", "uid": "prometheus"},
-          "expr": "node_hwmon_temp_celsius{chip=~\"0000:00:08.*\"}",
+          "expr": "max by (instance) (node_hwmon_temp_celsius{chip=~\"0000:00:08.*|amdgpu.*|radeon.*|nouveau.*|i915.*\"})",
           "legendFormat": "{{instance}} GPU",
           "refId": "A"
         }
