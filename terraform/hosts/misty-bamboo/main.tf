@@ -54,7 +54,7 @@ module "chunky_wombat" {
   source = "../../modules/vm"
 
   name         = "chunky-wombat"
-  vcpu         = 1 
+  vcpu         = 4
   memory       = 14336  # 14GB
   disk_size    = 100 * 1024 * 1024 * 1024  # 100GB
   base_volume_name = local.base_volume
@@ -68,7 +68,7 @@ module "fancy_penguin" {
   source = "../../modules/vm"
 
   name         = "fancy-penguin"
-  vcpu         = 2 
+  vcpu         = 4
   memory       = 14336  # 14GB
   disk_size    = 100 * 1024 * 1024 * 1024  # 100GB
   base_volume_name = local.base_volume

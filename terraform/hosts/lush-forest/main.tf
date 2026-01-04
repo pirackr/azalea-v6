@@ -54,7 +54,7 @@ module "grumpy_walrus" {
   source = "../../modules/vm"
 
   name         = "grumpy-walrus"
-  vcpu         = 2 
+  vcpu         = 4  
   memory       = 14336  # 14GB
   disk_size    = 100 * 1024 * 1024 * 1024  # 70GB
   base_volume_name = local.base_volume
@@ -68,7 +68,7 @@ module "happy_dolphin" {
   source = "../../modules/vm"
 
   name         = "happy-dolphin"
-  vcpu         = 2 
+  vcpu         = 4 
   memory       = 14336  # 14GB
   disk_size    = 100 * 1024 * 1024 * 1024  # 70GB
   base_volume_name = local.base_volume
