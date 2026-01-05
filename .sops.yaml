@@ -4,3 +4,4 @@
 creation_rules:
   - path_regex: ^kubernetes/apps/nextcloud/secret-.*\.yaml$
     age: age1gyjyj6vlv32rxxgsz5fdlfkgj92redq42nlhf798df9f05pcrgsqa0lx0u
+    encrypted_regex: '^(data|stringData)$'
