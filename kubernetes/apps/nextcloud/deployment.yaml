@@ -66,6 +66,9 @@ spec:
             httpGet:
               path: /
               port: http
+              httpHeaders:
+                - name: Host
+                  value: nextcloud.pirackr.xyz
             initialDelaySeconds: 60
             periodSeconds: 10
             timeoutSeconds: 5
@@ -73,6 +76,9 @@ spec:
             httpGet:
               path: /
               port: http
+              httpHeaders:
+                - name: Host
+                  value: nextcloud.pirackr.xyz
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 5
