@@ -4,6 +4,13 @@ metadata:
   name: postgres
 spec:
   instances: 2
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              cnpg.io/cluster: postgres
+          topologyKey: kubernetes.io/hostname
   storage:
     size: 10Gi
     storageClass: longhorn
