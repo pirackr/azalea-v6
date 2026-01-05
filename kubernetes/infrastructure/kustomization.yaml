@@ -6,6 +6,8 @@ resources:
   - sources
   # Storage (needed for PVCs)
   - storage
+  # Database operators
+  - databases
   # Ingress controller
   - controllers
   # Core infrastructure
