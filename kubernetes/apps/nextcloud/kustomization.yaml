@@ -5,7 +5,8 @@ namespace: nextcloud
 
 resources:
   - namespace.yaml
-  - secrets.yaml
+  - secret-db.yaml
+  - secret-admin.yaml
   - pvc.yaml
   - deployment.yaml
   - service.yaml
