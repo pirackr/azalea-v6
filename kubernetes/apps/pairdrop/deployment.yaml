@@ -31,8 +31,6 @@ spec:
               value: "America/Los_Angeles"
             - name: RATE_LIMIT
               value: "false"
-            - name: DEBUG_MODE
-              value: "true"
             - name: IPV6_LOCALIZE
               value: "4"
           resources:
