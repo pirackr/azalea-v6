@@ -4,5 +4,4 @@ kind: Kustomization
 resources:
   - calibre-web
   - adguard-home
-  - nextcloud
   # - jellyfin
