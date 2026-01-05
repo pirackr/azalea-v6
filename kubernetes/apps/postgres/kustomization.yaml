@@ -5,6 +5,7 @@ namespace: postgres
 
 resources:
   - namespace.yaml
+  - secret-nextcloud.yaml
   - cluster.yaml
 
 labels:

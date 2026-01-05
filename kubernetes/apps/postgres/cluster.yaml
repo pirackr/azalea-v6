@@ -6,6 +6,12 @@ spec:
   instances: 1
   storage:
     size: 10Gi
+  managed:
+    roles:
+      - name: nextcloud
+        login: true
+        passwordSecret:
+          name: postgres-nextcloud
   bootstrap:
     initdb:
       database: nextcloud
