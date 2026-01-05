@@ -1,14 +1,14 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: calibre-web-config
+  name: calibre-web-config-longhorn
   namespace: calibre-web
   labels:
     app.kubernetes.io/name: calibre-web
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: local-path
+  storageClassName: longhorn
   resources:
     requests:
       storage: 1Gi
@@ -16,14 +16,14 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: calibre-web-books
+  name: calibre-web-books-longhorn
   namespace: calibre-web
   labels:
     app.kubernetes.io/name: calibre-web
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: local-path
+  storageClassName: longhorn
   resources:
     requests:
       storage: 10Gi
