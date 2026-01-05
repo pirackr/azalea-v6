@@ -29,6 +29,10 @@ spec:
               value: "1000"
             - name: TZ
               value: "America/Los_Angeles"
+            - name: RATE_LIMIT
+              value: "false"
+            - name: DEBUG_MODE
+              value: "true"
           resources:
             requests:
               cpu: 50m
