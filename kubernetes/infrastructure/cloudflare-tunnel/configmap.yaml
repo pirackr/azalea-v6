@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflared-config
+  namespace: cloudflare-tunnel
+data:
+  config.yaml: |
+    ingress:
+      - hostname: ssh.pirackr.xyz
+        service: ssh://100.90.157.92:22
+      - service: http_status:404
