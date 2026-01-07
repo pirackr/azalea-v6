@@ -20,13 +20,20 @@ data:
       exit 1
     fi
 
-    forecast_url="https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m&temperature_unit=fahrenheit&timezone=America/Los_Angeles"
+    forecast_url="https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,soil_temperature_0cm&temperature_unit=fahrenheit&timezone=America/Los_Angeles"
     temperature=$(curl -fsSL "$forecast_url" | jq -r '.current.temperature_2m')
+    soil_temperature=$(curl -fsSL "$forecast_url" | jq -r '.current.soil_temperature_0cm')
 
     if [ -z "$temperature" ] || [ "$temperature" = "null" ]; then
       echo "Missing temperature in Open-Meteo response" >&2
       exit 1
     fi
 
-    printf "open_meteo_temperature_fahrenheit{location=\"%s\"} %s\n" "$location_label" "$temperature" | \
+    if [ -z "$soil_temperature" ] || [ "$soil_temperature" = "null" ]; then
+      echo "Missing soil temperature in Open-Meteo response" >&2
+      exit 1
+    fi
+
+    printf "open_meteo_temperature_fahrenheit{location=\"%s\"} %s\nopen_meteo_soil_temperature_fahrenheit{location=\"%s\"} %s\n" \
+      "$location_label" "$temperature" "$location_label" "$soil_temperature" | \
       curl -fsSL --data-binary @- http://open-meteo-pushgateway.open-meteo.svc:9091/metrics/job/open_meteo_weather/instance/maple_hills
