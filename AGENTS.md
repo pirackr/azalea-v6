@@ -9,6 +9,7 @@
 
 ## Build, Test, and Development Commands
 - `nix develop` enters the dev shell with kubectl/flux/ansible/sops/tofu.
+- For Flux/Kubernetes actions, use `nix develop --command` with `KUBECONFIG=$HOME/.kube/config-azalea` exported.
 - `cd bootstrap/ansible && ansible-playbook -i inventory/hosts.yml playbooks/site.yml` runs full host setup.
 - `cd terraform/hosts/<hostname> && tofu plan` previews VM changes; `tofu apply` applies them.
 - `flux reconcile kustomization apps --with-source` forces app sync after manifest changes.
