@@ -9,13 +9,14 @@ data:
     set -euo pipefail
 
     location_label="Maple Hills, WA"
-    geocode_url="https://geocoding-api.open-meteo.com/v1/search?name=Maple%20Hills&count=1&language=en&format=json&country=US"
+    geocode_url="https://geocoding-api.open-meteo.com/v1/search?name=Maple%20Hills&count=10&language=en&format=json&country=US"
+    geocode_json=$(curl -fsSL "$geocode_url")
 
-    lat=$(curl -fsSL "$geocode_url" | jq -r '.results[0].latitude')
-    lon=$(curl -fsSL "$geocode_url" | jq -r '.results[0].longitude')
+    lat=$(printf '%s' "$geocode_json" | jq -r '((.results // []) | map(select(.name=="Maple Hills" and .admin1=="Washington" and (.admin2=="King" or .admin2=="King County"))) | first | .latitude) // empty')
+    lon=$(printf '%s' "$geocode_json" | jq -r '((.results // []) | map(select(.name=="Maple Hills" and .admin1=="Washington" and (.admin2=="King" or .admin2=="King County"))) | first | .longitude) // empty')
 
     if [ -z "$lat" ] || [ "$lat" = "null" ] || [ -z "$lon" ] || [ "$lon" = "null" ]; then
-      echo "Failed to resolve Maple Hills coordinates" >&2
+      echo "Failed to resolve Maple Hills, WA coordinates" >&2
       exit 1
     fi
 
