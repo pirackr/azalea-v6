@@ -67,6 +67,57 @@
       },
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "blue", "value": null},
+              {"color": "green", "value": 45},
+              {"color": "orange", "value": 70},
+              {"color": "red", "value": 85}
+            ]
+          },
+          "unit": "fahrenheit"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 6},
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "expr": "open_meteo_soil_temperature_fahrenheit{location=\"Maple Hills, WA\"}",
+          "legendFormat": "Current",
+          "refId": "A"
+        }
+      ],
+      "title": "Maple Hills Soil Temperature",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
           "custom": {
             "drawStyle": "line",
             "lineInterpolation": "smooth",
@@ -98,6 +149,12 @@
           "expr": "open_meteo_temperature_fahrenheit{location=\"Maple Hills, WA\"}",
           "legendFormat": "Temperature",
           "refId": "A"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "expr": "open_meteo_soil_temperature_fahrenheit{location=\"Maple Hills, WA\"}",
+          "legendFormat": "Soil Temperature",
+          "refId": "B"
         }
       ],
       "title": "Temperature Over Time",
