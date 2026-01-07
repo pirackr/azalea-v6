@@ -40,13 +40,13 @@ nix develop
 
 # Bootstrap a new bare metal host (first time only)
 # Update IP in bootstrap/ansible/inventory/bootstrap.yml first
-cd bootstrap/ansible
-ansible-playbook -i inventory/bootstrap.yml playbooks/bootstrap.yml \
-  --limit <hostname> -u <initial-user> -kK
+# Use run.sh wrapper - it injects secrets from Doppler automatically
+./bootstrap/ansible/run.sh playbooks/bootstrap.yml \
+  -i inventory/bootstrap.yml --limit <hostname> -u <initial-user> -kK
 
 # Example: Bootstrap lush-forest
-# ansible-playbook -i inventory/bootstrap.yml playbooks/bootstrap.yml \
-#   --limit lush-forest -u youruser -kK
+# ./bootstrap/ansible/run.sh playbooks/bootstrap.yml \
+#   -i inventory/bootstrap.yml --limit lush-forest -u youruser -kK
 ```
 
 ### Step 2: Configure Hypervisor
@@ -54,13 +54,14 @@ ansible-playbook -i inventory/bootstrap.yml playbooks/bootstrap.yml \
 Install KVM/libvirt and configure the hypervisor.
 
 ```bash
-# Run hypervisor setup (uses Tailscale hostnames now)
-ansible-playbook -i inventory/hosts.yml playbooks/site.yml \
-  --limit <hostname> --tags hypervisor
+# Run hypervisor setup (uses Tailscale hostnames)
+# Use run.sh wrapper - it injects secrets from Doppler automatically
+./bootstrap/ansible/run.sh playbooks/site.yml \
+  -i inventory/hosts.yml --limit <hostname> --tags hypervisor
 
 # Example: Setup lush-forest hypervisor
-# ansible-playbook -i inventory/hosts.yml playbooks/site.yml \
-#   --limit lush-forest --tags hypervisor
+# ./bootstrap/ansible/run.sh playbooks/site.yml \
+#   -i inventory/hosts.yml --limit lush-forest --tags hypervisor
 ```
 
 ### Step 3: Provision VMs with Terraform
@@ -68,20 +69,22 @@ ansible-playbook -i inventory/hosts.yml playbooks/site.yml \
 Create VMs using Terraform/OpenTofu.
 
 ```bash
-# Navigate to host-specific terraform directory
-cd terraform/hosts/<hostname>
+# Use deploy.sh wrapper - it injects secrets from Doppler automatically
+# Syntax: ./terraform/deploy.sh <host> <command>
 
-# Example: Create VMs on lush-forest
-cd terraform/hosts/lush-forest
-
-# Initialize terraform
-tofu init
+# Initialize terraform for a host
+./terraform/deploy.sh <hostname> init
 
 # Review plan
-tofu plan
+./terraform/deploy.sh <hostname> plan
 
 # Apply (creates VMs)
-tofu apply
+./terraform/deploy.sh <hostname> apply
+
+# Example: Create VMs on lush-forest
+# ./terraform/deploy.sh lush-forest init
+# ./terraform/deploy.sh lush-forest plan
+# ./terraform/deploy.sh lush-forest apply
 
 # VMs will auto-start and join Tailscale network
 ```
@@ -91,17 +94,15 @@ tofu apply
 **Note:** Only needed for initial cluster setup or new worker nodes.
 
 ```bash
-cd bootstrap/ansible
-
 # For initial cluster setup (control plane + workers):
-ansible-playbook -i inventory/hosts.yml playbooks/kubernetes.yml
+./bootstrap/ansible/run.sh playbooks/kubernetes.yml -i inventory/hosts.yml
 
 # For adding new worker nodes only:
-ansible-playbook -i inventory/hosts.yml playbooks/kubernetes.yml \
+./bootstrap/ansible/run.sh playbooks/kubernetes.yml -i inventory/hosts.yml \
   --limit <new-worker-hostnames> --tags kubernetes,prerequisites,workers
 
 # Example: Add grumpy-walrus and happy-dolphin
-# ansible-playbook -i inventory/hosts.yml playbooks/kubernetes.yml \
+# ./bootstrap/ansible/run.sh playbooks/kubernetes.yml -i inventory/hosts.yml \
 #   --limit grumpy-walrus,happy-dolphin --tags kubernetes,prerequisites,workers
 ```
 
@@ -120,17 +121,15 @@ kubectl get nodes
 Install node_exporter and promtail on all hosts and VMs.
 
 ```bash
-cd bootstrap/ansible
-
 # Install on all hosts and VMs
-ansible-playbook -i inventory/hosts.yml playbooks/observability.yml
+./bootstrap/ansible/run.sh playbooks/observability.yml -i inventory/hosts.yml
 
 # Or target specific hosts
-ansible-playbook -i inventory/hosts.yml playbooks/observability.yml \
+./bootstrap/ansible/run.sh playbooks/observability.yml -i inventory/hosts.yml \
   --limit <hostname1>,<hostname2>
 
 # Example: Install on lush-forest and its VMs
-# ansible-playbook -i inventory/hosts.yml playbooks/observability.yml \
+# ./bootstrap/ansible/run.sh playbooks/observability.yml -i inventory/hosts.yml \
 #   --limit lush-forest,grumpy-walrus,happy-dolphin
 ```
 
@@ -148,6 +147,29 @@ git commit -m "feat(observability): add <hostname> to prometheus targets"
 git push
 
 # Flux will auto-reconcile, or force it:
+flux reconcile kustomization infrastructure --with-source
+```
+
+### Step 7: Bootstrap External Secrets (First Time Only)
+
+External Secrets Operator syncs secrets from Doppler to Kubernetes. The Doppler service token must be created manually as a bootstrap secret.
+
+```bash
+# Enter dev environment
+nix develop
+
+# Create a Doppler service token for External Secrets
+doppler configs tokens create external-secrets --plain
+# Save the token output (starts with dp.st.main.xxx)
+
+# Create the namespace and bootstrap secret
+export KUBECONFIG=~/.kube/config-azalea
+kubectl create namespace external-secrets
+kubectl create secret generic doppler-token \
+  --namespace=external-secrets \
+  --from-literal=token='<your-doppler-service-token>'
+
+# Flux will deploy External Secrets Operator and ClusterSecretStore
 flux reconcile kustomization infrastructure --with-source
 ```
 
@@ -222,15 +244,15 @@ flux get all                                   # View all Flux resources
 flux reconcile kustomization apps              # Force sync apps from Git
 flux logs --follow                             # Stream Flux logs
 
-# Ansible (from bootstrap/ansible/)
-ansible-playbook -i inventory/hosts.yml playbooks/site.yml          # Full setup
-ansible-playbook -i inventory/hosts.yml playbooks/kubernetes.yml    # K8s setup
-ansible-playbook -i inventory/hosts.yml playbooks/observability.yml # Monitoring
+# Ansible (use run.sh wrapper - injects Doppler secrets)
+./bootstrap/ansible/run.sh playbooks/site.yml -i inventory/hosts.yml           # Full setup
+./bootstrap/ansible/run.sh playbooks/kubernetes.yml -i inventory/hosts.yml     # K8s setup
+./bootstrap/ansible/run.sh playbooks/observability.yml -i inventory/hosts.yml  # Monitoring
 
-# Terraform (from terraform/hosts/<hostname>/)
-tofu plan    # Preview changes
-tofu apply   # Create/update VMs
-tofu destroy # Destroy VMs
+# Terraform (use deploy.sh wrapper - injects Doppler secrets)
+./terraform/deploy.sh <host> plan    # Preview changes
+./terraform/deploy.sh <host> apply   # Create/update VMs
+./terraform/deploy.sh <host> destroy # Destroy VMs
 
 # Monitoring
 curl http://<hostname>:9100/metrics  # Check node_exporter
@@ -262,7 +284,8 @@ azalea-v6/
 - **OS**: Ubuntu 24.04
 - **Virtualization**: KVM/libvirt
 - **Orchestration**: Kubernetes (kubeadm)
-- **CNI**: Cilium
+- **CNI**: Flannel over Tailscale
 - **GitOps**: FluxCD
 - **Networking**: Tailscale
-- **Secrets**: SOPS + age
+- **Secrets**: Doppler (infra) + External Secrets Operator (K8s)
+- **IaC**: OpenTofu, Ansible

@@ -10,6 +10,8 @@ resources:
   - databases
   # Ingress controller
   - controllers
+  # Secrets management
+  - external-secrets
   # Core infrastructure
   - cloudflare-tunnel
   # Observability stack

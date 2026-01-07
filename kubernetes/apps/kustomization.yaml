@@ -7,4 +7,5 @@ resources:
   - pairdrop
   - postgres
   - nextcloud
+  - open-meteo
   # - jellyfin

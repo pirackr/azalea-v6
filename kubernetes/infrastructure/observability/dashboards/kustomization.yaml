@@ -11,3 +11,9 @@ configMapGenerator:
     options:
       labels:
         grafana_dashboard: "1"
+  - name: open-meteo-weather-dashboard
+    files:
+      - open-meteo-weather.json
+    options:
+      labels:
+        grafana_dashboard: "1"
