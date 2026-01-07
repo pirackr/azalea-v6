@@ -1,0 +1,54 @@
+- name: Ensure pirackr user exists
+  ansible.builtin.user:
+    name: "{{ pirackr_user }}"
+    shell: "{{ pirackr_shell }}"
+    groups: "{{ pirackr_groups }}"
+    append: true
+    create_home: true
+  become: true
+
+- name: Ensure pirackr authorized keys
+  ansible.builtin.authorized_key:
+    user: "{{ pirackr_user }}"
+    key: "{{ item }}"
+    state: present
+  loop: "{{ pirackr_authorized_keys }}"
+  become: true
+
+- name: Disable SSH password authentication
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    create: false
+  loop:
+    - regexp: '^PasswordAuthentication'
+      line: 'PasswordAuthentication no'
+    - regexp: '^KbdInteractiveAuthentication'
+      line: 'KbdInteractiveAuthentication no'
+    - regexp: '^ChallengeResponseAuthentication'
+      line: 'ChallengeResponseAuthentication no'
+    - regexp: '^PubkeyAuthentication'
+      line: 'PubkeyAuthentication yes'
+  when: disable_password_auth
+  notify: Restart ssh
+  become: true
+
+- name: Remove ubuntu user
+  ansible.builtin.user:
+    name: ubuntu
+    state: absent
+    remove: true
+  when: remove_ubuntu_user
+  become: true
+
+- name: Configure passwordless sudo for pirackr
+  ansible.builtin.copy:
+    dest: "/etc/sudoers.d/{{ pirackr_user }}"
+    content: "{{ pirackr_user }} ALL=(ALL) NOPASSWD:ALL\n"
+    owner: root
+    group: root
+    mode: "0440"
+    validate: "visudo -cf %s"
+  when: pirackr_passwordless_sudo
+  become: true

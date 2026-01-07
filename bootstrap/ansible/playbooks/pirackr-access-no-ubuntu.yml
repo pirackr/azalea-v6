@@ -1,0 +1,6 @@
+- name: Configure pirackr access (keep ubuntu user)
+  hosts: bare_metal
+  roles:
+    - role: ../roles/pirackr_access
+      vars:
+        remove_ubuntu_user: false

@@ -14,7 +14,8 @@
   vars:
     deploy_user: deploy
     deploy_public_key: "{{ lookup('file', '../../../secrets/deploy_key.pub') }}"
-    tailscale_authkey: "{{ lookup('pipe', '../../../bootstrap/scripts/decrypt-tailscale-key.sh') }}"
+    # Tailscale auth key injected via Doppler (run.sh wrapper)
+    tailscale_authkey: "{{ lookup('env', 'TAILSCALE_AUTHKEY') }}"
 
   tasks:
     # --- SSH Key Setup ---

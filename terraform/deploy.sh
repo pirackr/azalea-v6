@@ -3,12 +3,14 @@
 # Deploys VMs to remote hosts via SSH from local machine
 #
 # Usage: ./deploy.sh <host> <action>
-#   host: golden-savanna | misty-bamboo
+#   host: golden-savanna | misty-bamboo | lush-forest
 #   action: init | plan | apply | destroy | output
+#
+# Secrets are managed via Doppler (project: azalea, config: main)
 
 set -euo pipefail
 
-# Ensure we're running in nix shell for age/tofu availability
+# Ensure we're running in nix shell for tofu availability
 if [ -z "${IN_NIX_SHELL:-}" ]; then
     echo "Not in nix shell, entering nix develop environment..."
     SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]}")"
@@ -21,7 +23,7 @@ fi
 # Check arguments
 if [ $# -lt 2 ]; then
     echo "Usage: $0 <host> <action>"
-    echo "  host: golden-savanna | misty-bamboo"
+    echo "  host: golden-savanna | misty-bamboo | lush-forest"
     echo "  action: init | plan | apply | destroy | output"
     exit 1
 fi
@@ -39,17 +41,15 @@ if [[ ! -d "$SCRIPT_DIR/hosts/$HOST" ]]; then
     exit 1
 fi
 
-# Decrypt and source S3 credentials
-if [[ -f "$PROJECT_ROOT/secrets/.s3.enc" ]]; then
-    S3_CREDS=$(sops -d --output-type json "$PROJECT_ROOT/secrets/.s3.enc" | jq -r '.data')
-    eval "$S3_CREDS"
-    echo "✓ Loaded S3 credentials"
-else
-    echo "Error: S3 credentials not found at $PROJECT_ROOT/secrets/.s3.enc"
-    exit 1
+# Check if running inside Doppler (secrets already injected)
+if [[ -z "${DEPLOY_KEY:-}" ]]; then
+    echo "Not running inside Doppler, re-executing with doppler run..."
+    exec doppler run --project azalea --config main -- "$0" "$@"
 fi
 
-# Load SSH public key
+echo "✓ Secrets loaded from Doppler"
+
+# Load SSH public key (not sensitive, kept as file)
 SSH_PUB_KEY_FILE="$PROJECT_ROOT/secrets/deploy_key.pub"
 if [[ ! -f "$SSH_PUB_KEY_FILE" ]]; then
     echo "Error: SSH public key not found at $SSH_PUB_KEY_FILE"
@@ -58,23 +58,16 @@ fi
 export TF_VAR_ssh_public_key=$(cat "$SSH_PUB_KEY_FILE")
 echo "✓ Loaded SSH public key"
 
-# Decrypt SSH private key for libvirt connection
-SSH_PRIV_KEY_FILE="$PROJECT_ROOT/secrets/deploy_key"
-if [[ ! -f "$SSH_PRIV_KEY_FILE" ]]; then
-    echo "Decrypting SSH private key..."
-    "$PROJECT_ROOT/bootstrap/scripts/decrypt-key.sh" > "$SSH_PRIV_KEY_FILE"
-    chmod 600 "$SSH_PRIV_KEY_FILE"
-fi
+# Write SSH private key from Doppler to temp file (Terraform needs file path)
+SSH_PRIV_KEY_FILE=$(mktemp)
+trap "rm -f $SSH_PRIV_KEY_FILE" EXIT
+echo "$DEPLOY_KEY" > "$SSH_PRIV_KEY_FILE"
+chmod 600 "$SSH_PRIV_KEY_FILE"
 export TF_VAR_ssh_private_key_path="$SSH_PRIV_KEY_FILE"
 echo "✓ Loaded SSH private key"
 
-# Decrypt and load Tailscale auth key
-TAILSCALE_KEY=$("$PROJECT_ROOT/bootstrap/scripts/decrypt-tailscale-key.sh")
-if [[ -z "$TAILSCALE_KEY" ]]; then
-    echo "Error: Failed to decrypt Tailscale auth key"
-    exit 1
-fi
-export TF_VAR_tailscale_authkey="$TAILSCALE_KEY"
+# Map Doppler secret to Terraform variable
+export TF_VAR_tailscale_authkey="$TAILSCALE_AUTHKEY"
 echo "✓ Loaded Tailscale auth key"
 
 # Verify SSH connectivity to remote host

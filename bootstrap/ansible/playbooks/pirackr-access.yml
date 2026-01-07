@@ -1,0 +1,10 @@
+- name: Configure pirackr access on selected bare metal and VMs
+  hosts:
+    - golden-savanna
+    - misty-bamboo
+    - sleepy-koala
+    - lazy-panda
+    - chunky-wombat
+    - fancy-penguin
+  roles:
+    - role: ../roles/pirackr_access
