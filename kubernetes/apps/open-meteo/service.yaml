@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: open-meteo-pushgateway
+  namespace: open-meteo
+  labels:
+    app.kubernetes.io/name: open-meteo-pushgateway
+spec:
+  selector:
+    app.kubernetes.io/name: open-meteo-pushgateway
+  ports:
+    - name: http
+      port: 9091
+      targetPort: http

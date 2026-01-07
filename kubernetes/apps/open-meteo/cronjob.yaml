@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: open-meteo-scrape
+  namespace: open-meteo
+spec:
+  schedule: "*/10 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: scraper
+              image: alpine:3.19
+              command:
+                - /bin/sh
+                - -c
+                - |-
+                  apk add --no-cache curl jq
+                  /scripts/scrape.sh
+              volumeMounts:
+                - name: scripts
+                  mountPath: /scripts
+          volumes:
+            - name: scripts
+              configMap:
+                name: open-meteo-scraper
+                defaultMode: 0755

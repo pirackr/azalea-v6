@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: open-meteo-pushgateway
+  namespace: open-meteo
+  labels:
+    release: kube-prometheus-stack
+spec:
+  namespaceSelector:
+    matchNames:
+      - open-meteo
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: open-meteo-pushgateway
+  endpoints:
+    - port: http
+      interval: 5m
+      honorLabels: true

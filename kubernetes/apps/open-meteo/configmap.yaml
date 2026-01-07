@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: open-meteo-scraper
+  namespace: open-meteo
+data:
+  scrape.sh: |
+    #!/bin/sh
+    set -euo pipefail
+
+    location_label="Maple Hills, WA"
+    geocode_url="https://geocoding-api.open-meteo.com/v1/search?name=Maple%20Hills&count=1&language=en&format=json&country=US"
+
+    lat=$(curl -fsSL "$geocode_url" | jq -r '.results[0].latitude')
+    lon=$(curl -fsSL "$geocode_url" | jq -r '.results[0].longitude')
+
+    if [ -z "$lat" ] || [ "$lat" = "null" ] || [ -z "$lon" ] || [ "$lon" = "null" ]; then
+      echo "Failed to resolve Maple Hills coordinates" >&2
+      exit 1
+    fi
+
+    forecast_url="https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m&temperature_unit=fahrenheit&timezone=America/Los_Angeles"
+    temperature=$(curl -fsSL "$forecast_url" | jq -r '.current.temperature_2m')
+
+    if [ -z "$temperature" ] || [ "$temperature" = "null" ]; then
+      echo "Missing temperature in Open-Meteo response" >&2
+      exit 1
+    fi
+
+    printf "open_meteo_temperature_fahrenheit{location=\"%s\"} %s\n" "$location_label" "$temperature" | \
+      curl -fsSL --data-binary @- http://open-meteo-pushgateway.open-meteo.svc:9091/metrics/job/open_meteo_weather/instance/maple_hills
