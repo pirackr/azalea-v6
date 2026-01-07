@@ -15,12 +15,6 @@ variable "cloudflare_zone_id" {
   type        = string
 }
 
-# Import-only variables (can be removed after first apply)
-variable "tunnel_id" {
-  description = "Existing Cloudflare tunnel ID (for import)"
-  type        = string
-}
-
 variable "tunnel_secret" {
   description = "Tunnel secret (base64 encoded)"
   type        = string

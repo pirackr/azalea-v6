@@ -58,7 +58,6 @@ if [[ "$TARGET" == "cloudflare" ]]; then
     # Cloudflare target - map Doppler secrets to TF variables
     export TF_VAR_cloudflare_api_token="$CLOUDFLARE_API_TOKEN"
     export TF_VAR_cloudflare_zone_id="$CLOUDFLARE_ZONE_ID"
-    export TF_VAR_tunnel_id="$CLOUDFLARE_TUNNEL_ID"
     export TF_VAR_tunnel_secret="$CLOUDFLARE_TUNNEL_SECRET"
     echo "✓ Loaded Cloudflare credentials"
 else

@@ -41,8 +41,9 @@ Azalea v6 is a home lab Kubernetes infrastructure project with VMs on bare metal
 | Ingress | Traefik |
 | External Access | Cloudflare Tunnel |
 | Mesh Network | Tailscale |
-| Secrets | SOPS + age |
+| Secrets | Doppler (infra), SOPS + age (K8s) |
 | IaC | OpenTofu, Ansible |
+| Cloudflare | Tunnel, R2 (TF state) |
 
 ## Commands
 
@@ -66,33 +67,42 @@ kubectl logs -n flux-system deploy/source-controller
 kubectl logs -n flux-system deploy/kustomize-controller
 kubectl describe helmrelease -n <namespace> <release-name>
 
-# --- Ansible (from bootstrap/ansible/) ---
+# --- Ansible (use run.sh wrapper - injects secrets from Doppler) ---
 # Bootstrap new bare metal host (first time, with password)
-ansible-playbook -i inventory/bootstrap.yml playbooks/bootstrap.yml --limit <host> -u <user> -kK
+./bootstrap/ansible/run.sh playbooks/bootstrap.yml -i inventory/bootstrap.yml -u <user> -kK
 
 # Configure hypervisor
-ansible-playbook -i inventory/hosts.yml playbooks/site.yml --limit <host> --tags hypervisor
+./bootstrap/ansible/run.sh playbooks/site.yml -i inventory/hosts.yml --limit <host> --tags hypervisor
 
 # Deploy/update K8s cluster
-ansible-playbook -i inventory/hosts.yml playbooks/kubernetes.yml
+./bootstrap/ansible/run.sh playbooks/kubernetes.yml -i inventory/hosts.yml
 
 # Add new workers only
-ansible-playbook -i inventory/hosts.yml playbooks/kubernetes.yml --limit <workers> --tags kubernetes,prerequisites,workers
+./bootstrap/ansible/run.sh playbooks/kubernetes.yml -i inventory/hosts.yml --limit <workers> --tags kubernetes,prerequisites,workers
 
 # Install observability agents
-ansible-playbook -i inventory/hosts.yml playbooks/observability.yml
+./bootstrap/ansible/run.sh playbooks/observability.yml -i inventory/hosts.yml
 
-# --- Terraform / OpenTofu ---
-# Use deploy.sh wrapper (handles secrets, SSH keys, Tailscale auth)
-./terraform/deploy.sh <host> init     # Initialize (golden-savanna, misty-bamboo, lush-forest)
-./terraform/deploy.sh <host> plan     # Preview VM changes
-./terraform/deploy.sh <host> apply    # Create/update VMs
-./terraform/deploy.sh <host> destroy  # Destroy VMs
+# --- Terraform / OpenTofu (use deploy.sh wrapper - injects secrets from Doppler) ---
+# VM management (golden-savanna, misty-bamboo, lush-forest)
+./terraform/deploy.sh <host> init
+./terraform/deploy.sh <host> plan
+./terraform/deploy.sh <host> apply
+./terraform/deploy.sh <host> destroy
+
+# Cloudflare resources (tunnel, DNS)
+./terraform/deploy.sh cloudflare init
+./terraform/deploy.sh cloudflare plan
+./terraform/deploy.sh cloudflare apply
 
 # --- Secrets ---
-sops <file>.yaml            # Edit encrypted file
-sops -d <file>.yaml         # Decrypt to stdout
-./bootstrap/scripts/decrypt-key.sh  # Decrypt SSH deploy key
+# Infrastructure secrets: Doppler (project: azalea, config: main)
+doppler secrets                       # List all secrets
+doppler secrets set KEY=value         # Set a secret
+
+# K8s secrets: SOPS + age (encrypted in git)
+sops <file>.yaml                      # Edit encrypted file
+sops -d <file>.yaml                   # Decrypt to stdout
 ```
 
 ## Architecture
@@ -115,23 +125,26 @@ Internet → Cloudflare Tunnel → Traefik (Ingress) → K8s Services
 3. Commit, push, and Flux deploys automatically
 
 ### Adding New Hosts/Workers
-1. Bootstrap bare metal: `ansible-playbook ... playbooks/bootstrap.yml`
-2. Configure hypervisor: `ansible-playbook ... playbooks/site.yml --tags hypervisor`
+1. Bootstrap bare metal: `./bootstrap/ansible/run.sh playbooks/bootstrap.yml -i inventory/bootstrap.yml -u <user> -kK`
+2. Configure hypervisor: `./bootstrap/ansible/run.sh playbooks/site.yml -i inventory/hosts.yml --limit <host> --tags hypervisor`
 3. Provision VMs: `./terraform/deploy.sh <host> apply`
-4. Join K8s: `ansible-playbook ... playbooks/kubernetes.yml --limit <workers>`
+4. Join K8s: `./bootstrap/ansible/run.sh playbooks/kubernetes.yml -i inventory/hosts.yml --limit <workers>`
 5. Update Prometheus targets in `kubernetes/infrastructure/observability/`
 
 ## Style Guidelines
 
 - Use 2-space indentation in YAML and Terraform
 - Commit messages follow Conventional Commits (`fix(observability): ...`, `feat(apps): ...`)
-- Never commit plaintext secrets; use SOPS encryption
+- Infrastructure secrets go in Doppler; K8s secrets use SOPS encryption
 - Prefer hostnames over IPs in inventories and manifests
 
 ## Key Files
 
+- `bootstrap/ansible/run.sh` - Ansible wrapper (injects Doppler secrets)
 - `bootstrap/ansible/inventory/hosts.yml` - Production host inventory
+- `terraform/deploy.sh` - OpenTofu wrapper (injects Doppler secrets)
+- `terraform/hosts/<hostname>/` - Per-host VM definitions
+- `terraform/cloudflare/` - Cloudflare tunnel and DNS management
 - `kubernetes/infrastructure/kustomization.yaml` - Infrastructure components
 - `kubernetes/apps/kustomization.yaml` - Application deployments
-- `terraform/hosts/<hostname>/` - Per-host VM definitions
-- `secrets/` - SOPS-encrypted secrets (age key at `~/.config/sops/age/keys.txt`)
+- `secrets/deploy_key.pub` - SSH public key (only public key remains in git)

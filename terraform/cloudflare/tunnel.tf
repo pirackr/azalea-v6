@@ -3,12 +3,6 @@
 #   - *.pirackr.xyz -> traefik (K8s ingress)
 #   - ssh.pirackr.xyz -> golden-savanna:22
 
-# Import block for existing tunnel (run once, then can be removed)
-import {
-  to = cloudflare_zero_trust_tunnel_cloudflared.azalea
-  id = "${var.cloudflare_account_id}/${var.tunnel_id}"
-}
-
 resource "cloudflare_zero_trust_tunnel_cloudflared" "azalea" {
   account_id = var.cloudflare_account_id
   name       = "azalea"
