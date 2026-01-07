@@ -21,8 +21,9 @@ data:
     fi
 
     forecast_url="https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,soil_temperature_0cm&temperature_unit=fahrenheit&timezone=America/Los_Angeles"
-    temperature=$(curl -fsSL "$forecast_url" | jq -r '.current.temperature_2m')
-    soil_temperature=$(curl -fsSL "$forecast_url" | jq -r '.current.soil_temperature_0cm')
+    forecast_json=$(curl -fsSL --max-time 15 "$forecast_url")
+    temperature=$(printf '%s' "$forecast_json" | jq -r '.current.temperature_2m')
+    soil_temperature=$(printf '%s' "$forecast_json" | jq -r '.current.soil_temperature_0cm')
 
     if [ -z "$temperature" ] || [ "$temperature" = "null" ]; then
       echo "Missing temperature in Open-Meteo response" >&2
