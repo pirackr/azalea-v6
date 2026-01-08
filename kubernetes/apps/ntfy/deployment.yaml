@@ -1,0 +1,65 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ntfy
+  namespace: ntfy
+  labels:
+    app.kubernetes.io/name: ntfy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ntfy
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ntfy
+    spec:
+      containers:
+        - name: ntfy
+          image: binwiederhier/ntfy:latest
+          args:
+            - serve
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          env:
+            - name: NTFY_BASE_URL
+              value: "https://ntfy.pirackr.xyz"
+            - name: NTFY_CACHE_FILE
+              value: "/var/cache/ntfy/cache.db"
+            - name: NTFY_AUTH_FILE
+              value: "/var/cache/ntfy/auth.db"
+            - name: NTFY_AUTH_DEFAULT_ACCESS
+              valueFrom:
+                secretKeyRef:
+                  name: ntfy-config
+                  key: NTFY_AUTH_DEFAULT_ACCESS
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          volumeMounts:
+            - name: cache
+              mountPath: /var/cache/ntfy
+          livenessProbe:
+            httpGet:
+              path: /v1/health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /v1/health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: cache
+          persistentVolumeClaim:
+            claimName: ntfy-cache

@@ -9,4 +9,4 @@ resources:
   - loki-stack.yaml
   - loki-external.yaml
   - ingress.yaml
-  - dashboards
+  - alertmanager

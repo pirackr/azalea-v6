@@ -8,4 +8,5 @@ resources:
   - postgres
   - nextcloud
   - open-meteo
+  - ntfy
   # - jellyfin
