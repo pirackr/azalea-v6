@@ -21,6 +21,11 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "azalea" {
       service  = "ssh://golden-savanna:22"
     }
 
+    ingress_rule {
+      hostname = "org.pirackr.xyz"
+      service = "ssh://ssh-pod.ssh-pod.svc.cluster.local:22"
+    }
+
     # Wildcard -> Traefik ingress controller
     ingress_rule {
       hostname = "*.pirackr.xyz"
@@ -47,6 +52,15 @@ resource "cloudflare_record" "tunnel_wildcard" {
 resource "cloudflare_record" "tunnel_ssh" {
   zone_id = var.cloudflare_zone_id
   name    = "ssh"
+  type    = "CNAME"
+  content = "${cloudflare_zero_trust_tunnel_cloudflared.azalea.id}.cfargotunnel.com"
+  proxied = true
+  ttl     = 1
+}
+
+resource "cloudflare_record" "tunnel_org" {
+  zone_id = var.cloudflare_zone_id
+  name    = "org"
   type    = "CNAME"
   content = "${cloudflare_zero_trust_tunnel_cloudflared.azalea.id}.cfargotunnel.com"
   proxied = true
