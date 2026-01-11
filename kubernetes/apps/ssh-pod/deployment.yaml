@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ssh-pod
+  namespace: ssh-pod
+  labels:
+    app.kubernetes.io/name: ssh-pod
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ssh-pod
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ssh-pod
+    spec:
+      containers:
+        - name: sshd
+          image: lscr.io/linuxserver/openssh-server:latest
+          ports:
+            - name: ssh
+              containerPort: 2222
+              protocol: TCP
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "America/Los_Angeles"
+            - name: USER_NAME
+              value: pirackr
+            - name: PASSWORD_ACCESS
+              value: "false"
+            - name: SUDO_ACCESS
+              value: "false"
+            - name: PUBLIC_KEY
+              value: |-
+                sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAID3Drv81UCKTs6hb4WRL3is9i6LQ+FjJVPp0/pUmZVOHAAAABHNzaDo= yubikey-1
+                sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIPfwXSDdqV3eDT1R3PVyXrX+p+ZOHzKJYjuropbSh8fGAAAABHNzaDo= yubikey-2
+          volumeMounts:
+            - name: org-data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 512Mi
+      volumes:
+        - name: org-data
+          persistentVolumeClaim:
+            claimName: ssh-pod-data

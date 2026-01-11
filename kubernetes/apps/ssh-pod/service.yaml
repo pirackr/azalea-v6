@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ssh-pod
+  namespace: ssh-pod
+  labels:
+    app.kubernetes.io/name: ssh-pod
+spec:
+  type: ClusterIP
+  ports:
+    - name: ssh
+      port: 22
+      targetPort: ssh
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: ssh-pod
