@@ -4,10 +4,6 @@ kind: Kustomization
 namespace: org
 
 resources:
-  - pvc.yaml
   - deployment.yaml
   - service.yaml
-
-commonLabels:
-  app.kubernetes.io/name: ssh-pod
-  app.kubernetes.io/part-of: azalea-homelab
+  - ingress.yaml

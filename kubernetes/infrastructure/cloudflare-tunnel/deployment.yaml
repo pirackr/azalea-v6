@@ -23,8 +23,6 @@ spec:
             - --no-autoupdate
             - --config
             - /etc/cloudflared/config.yaml
-            - --cred-file
-            - /etc/cloudflared/credentials.json
             - run
           envFrom:
             - secretRef:
@@ -32,9 +30,6 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /etc/cloudflared
-            - name: credentials
-              mountPath: /etc/cloudflared/credentials.json
-              subPath: credentials.json
           resources:
             requests:
               memory: "64Mi"
@@ -46,9 +41,3 @@ spec:
         - name: config
           configMap:
             name: cloudflared-config
-        - name: credentials
-          secret:
-            secretName: cloudflared-token
-            items:
-              - key: TUNNEL_TOKEN
-                path: credentials.json

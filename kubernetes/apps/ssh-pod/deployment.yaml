@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ssh-pod
-  namespace: ssh-pod
+  namespace: org
   labels:
     app.kubernetes.io/name: ssh-pod
 spec:

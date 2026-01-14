@@ -9,5 +9,7 @@ resources:
   - nextcloud
   - open-meteo
   - ntfy
+  - org-graphql
+  - org-tides
   - ssh-pod
   # - jellyfin

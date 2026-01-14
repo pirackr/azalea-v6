@@ -10,5 +10,7 @@ data:
       - hostname: ssh.pirackr.xyz
         service: ssh://100.90.157.92:22
       - hostname: org.pirackr.xyz
-        service: ssh://ssh-pod.ssh-pod.svc.cluster.local:22
+        service: ssh://ssh-pod.org.svc.cluster.local:22
+      - hostname: "*.pirackr.xyz"
+        service: http://traefik.traefik.svc.cluster.local:80
       - service: http_status:404
