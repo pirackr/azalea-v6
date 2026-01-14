@@ -1,9 +1,0 @@
-apiVersion: traefik.io/v1alpha1
-kind: Middleware
-metadata:
-  name: org-graphql-strip-prefix
-  namespace: org
-spec:
-  stripPrefix:
-    prefixes:
-      - /api
