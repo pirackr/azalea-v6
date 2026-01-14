@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: org-tides
-          image: ghcr.io/pirackr/org-tides:1573d029cd044311ac3e31e56e52f178d3809cb1
+          image: ghcr.io/pirackr/org-tides:eb9ddf2a314fb7dea53b59d5ed067bef76cdcca8
           ports:
             - name: http
               containerPort: 80
