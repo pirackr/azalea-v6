@@ -41,7 +41,7 @@ spec:
               mountPath: /data
       containers:
         - name: org-graphql
-          image: ghcr.io/pirackr/org-graphql:sha-662090d
+          image: ghcr.io/pirackr/org-graphql:sha-fd977935dcba8d9292adbb92c3b64d1afacab20f
           ports:
             - name: http
               containerPort: 8080
