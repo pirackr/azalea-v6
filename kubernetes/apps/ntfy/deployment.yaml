@@ -72,6 +72,8 @@ spec:
                 secretKeyRef:
                   name: ntfy-config
                   key: NTFY_AUTH_DEFAULT_ACCESS
+            - name: NTFY_UPSTREAM_BASE_URL
+              value: "https://ntfy.sh"
           resources:
             requests:
               cpu: 50m
