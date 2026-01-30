@@ -1,0 +1,75 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alertmanager-ntfy
+  namespace: observability
+  labels:
+    app.kubernetes.io/name: alertmanager-ntfy
+    app.kubernetes.io/instance: observability
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: alertmanager-ntfy
+      app.kubernetes.io/instance: observability
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: alertmanager-ntfy
+        app.kubernetes.io/instance: observability
+    spec:
+      initContainers:
+        - name: render-auth-config
+          image: busybox:1.36.1
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -eu
+              cp /config-src/config.yaml /config/config.yaml
+              cat <<EOF > /config/auth.yaml
+              http:
+                auth:
+                  username: "alertmanager"
+                  password: "${WEBHOOK_PASSWORD}"
+              ntfy:
+                auth:
+                  token: "${NTFY_TOKEN}"
+              EOF
+          env:
+            - name: NTFY_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: alertmanager-ntfy
+                  key: token
+            - name: WEBHOOK_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: alertmanager-ntfy
+                  key: webhook_password
+          volumeMounts:
+            - name: config-src
+              mountPath: /config-src
+              readOnly: true
+            - name: config
+              mountPath: /config
+      containers:
+        - name: alertmanager-ntfy
+          image: ghcr.io/alexbakker/alertmanager-ntfy:1.1.0
+          args:
+            - --configs
+            - /config/config.yaml,/config/auth.yaml
+          ports:
+            - name: http
+              containerPort: 8000
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+      volumes:
+        - name: config-src
+          configMap:
+            name: alertmanager-ntfy-config
+        - name: config
+          emptyDir: {}

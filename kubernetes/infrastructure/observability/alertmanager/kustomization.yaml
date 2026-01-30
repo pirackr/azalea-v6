@@ -6,3 +6,6 @@ namespace: observability
 
 resources:
   - external-secret-ntfy.yaml
+  - alertmanager-ntfy-config.yaml
+  - alertmanager-ntfy-deployment.yaml
+  - alertmanager-ntfy-service.yaml
