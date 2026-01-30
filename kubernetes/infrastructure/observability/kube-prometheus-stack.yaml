@@ -209,7 +209,7 @@ spec:
 
     # Node exporter for host metrics
     nodeExporter:
-      enabled: true
+      enabled: false
 
     # Prometheus Operator
     prometheusOperator:
