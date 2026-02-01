@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: azalea-dev
+  namespace: dev
+  labels:
+    app.kubernetes.io/name: azalea-dev
+spec:
+  type: ClusterIP
+  ports:
+    - name: ssh
+      port: 22
+      targetPort: ssh
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: azalea-dev

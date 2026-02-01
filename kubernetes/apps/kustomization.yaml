@@ -6,6 +6,7 @@ resources:
   - adguard-home
   - pairdrop
   - postgres
+  - azalea-dev
   - nextcloud
   - open-meteo
   - ntfy
