@@ -12,13 +12,59 @@ RUN apt-get update \
     direnv \
     gh \
     git \
+    jq \
     libfido2-1 \
     openssh-client \
     openssh-server \
     ripgrep \
+    shellcheck \
+    vim \
     unzip \
+    wget \
     xz-utils \
+    ansible \
+    ansible-lint \
+    sops \
+    age \
   && rm -rf /var/lib/apt/lists/*
+
+RUN set -e; \
+  arch="$(dpkg --print-architecture)"; \
+  case "${arch}" in \
+    amd64|arm64) ;; \
+    *) echo "Unsupported arch: ${arch}" >&2; exit 1 ;; \
+  esac; \
+  kubectl_version="$(curl -fsSL https://dl.k8s.io/release/stable.txt)"; \
+  curl -fsSLo /usr/local/bin/kubectl "https://dl.k8s.io/release/${kubectl_version}/bin/linux/${arch}/kubectl"; \
+  chmod +x /usr/local/bin/kubectl; \
+  helm_version="$(curl -fsSL https://api.github.com/repos/helm/helm/releases/latest | jq -r .tag_name)"; \
+  curl -fsSLo /tmp/helm.tar.gz "https://get.helm.sh/helm-${helm_version}-linux-${arch}.tar.gz"; \
+  tar -xzf /tmp/helm.tar.gz -C /tmp; \
+  mv /tmp/linux-${arch}/helm /usr/local/bin/helm; \
+  rm -rf /tmp/helm.tar.gz /tmp/linux-${arch}; \
+  flux_version="$(curl -fsSL https://api.github.com/repos/fluxcd/flux2/releases/latest | jq -r .tag_name)"; \
+  curl -fsSLo /tmp/flux.tar.gz "https://github.com/fluxcd/flux2/releases/download/${flux_version}/flux_${flux_version#v}_linux_${arch}.tar.gz"; \
+  tar -xzf /tmp/flux.tar.gz -C /tmp; \
+  mv /tmp/flux /usr/local/bin/flux; \
+  rm -f /tmp/flux.tar.gz; \
+  kustomize_tag="$(curl -fsSL https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest | jq -r .tag_name)"; \
+  kustomize_version="${kustomize_tag#kustomize/}"; \
+  curl -fsSLo /tmp/kustomize.tar.gz "https://github.com/kubernetes-sigs/kustomize/releases/download/${kustomize_tag}/kustomize_${kustomize_version}_linux_${arch}.tar.gz"; \
+  tar -xzf /tmp/kustomize.tar.gz -C /usr/local/bin; \
+  rm -f /tmp/kustomize.tar.gz; \
+  kubeconform_version="$(curl -fsSL https://api.github.com/repos/yannh/kubeconform/releases/latest | jq -r .tag_name)"; \
+  curl -fsSLo /tmp/kubeconform.tar.gz "https://github.com/yannh/kubeconform/releases/download/${kubeconform_version}/kubeconform-linux-${arch}.tar.gz"; \
+  tar -xzf /tmp/kubeconform.tar.gz -C /usr/local/bin kubeconform; \
+  rm -f /tmp/kubeconform.tar.gz; \
+  opentofu_version="$(curl -fsSL https://api.github.com/repos/opentofu/opentofu/releases/latest | jq -r .tag_name)"; \
+  curl -fsSLo /tmp/opentofu.tar.gz "https://github.com/opentofu/opentofu/releases/download/${opentofu_version}/tofu_${opentofu_version#v}_linux_${arch}.tar.gz"; \
+  tar -xzf /tmp/opentofu.tar.gz -C /usr/local/bin tofu; \
+  rm -f /tmp/opentofu.tar.gz; \
+  curl -fsSLo /usr/local/bin/cloudflared "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-${arch}"; \
+  chmod +x /usr/local/bin/cloudflared; \
+  yq_version="$(curl -fsSL https://api.github.com/repos/mikefarah/yq/releases/latest | jq -r .tag_name)"; \
+  curl -fsSLo /usr/local/bin/yq "https://github.com/mikefarah/yq/releases/download/${yq_version}/yq_linux_${arch}"; \
+  chmod +x /usr/local/bin/yq
 
 RUN if getent group "${GID}" >/dev/null; then \
     group_name="$(getent group "${GID}" | cut -d: -f1)"; \
@@ -43,17 +89,6 @@ RUN if getent group "${GID}" >/dev/null; then \
   fi \
   && passwd -d "${USERNAME}" \
   && usermod -U "${USERNAME}"
-
-RUN mkdir -p /nix \
-  && chown ${UID}:${GID} /nix
-
-RUN curl -L https://nixos.org/nix/install -o /tmp/nix-install.sh \
-  && su - ${USERNAME} -c "sh /tmp/nix-install.sh --no-daemon" \
-  && rm /tmp/nix-install.sh
-
-RUN printf '%s\n' 'if [ -e /home/pirackr/.nix-profile/etc/profile.d/nix.sh ]; then' \
-  '  . /home/pirackr/.nix-profile/etc/profile.d/nix.sh' \
-  'fi' > /etc/profile.d/nix.sh
 
 RUN npm install -g \
     @anthropic-ai/claude-code \
