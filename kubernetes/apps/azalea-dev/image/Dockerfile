@@ -49,7 +49,9 @@ RUN curl -L https://nixos.org/nix/install -o /tmp/nix-install.sh \
   && su - ${USERNAME} -c "sh /tmp/nix-install.sh --no-daemon" \
   && rm /tmp/nix-install.sh
 
-RUN printf '%s\n' '. /home/pirackr/.nix-profile/etc/profile.d/nix.sh' > /etc/profile.d/nix.sh
+RUN printf '%s\n' 'if [ -e /home/pirackr/.nix-profile/etc/profile.d/nix.sh ]; then' \
+  '  . /home/pirackr/.nix-profile/etc/profile.d/nix.sh' \
+  'fi' > /etc/profile.d/nix.sh
 
 RUN npm install -g \
     @anthropic-ai/claude-code \
