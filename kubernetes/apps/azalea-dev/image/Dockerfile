@@ -38,7 +38,8 @@ RUN if getent group "${GID}" >/dev/null; then \
     fi; \
   else \
     useradd -m -u "${UID}" -g "${group_name}" -s /bin/bash "${USERNAME}"; \
-  fi
+  fi \
+  && usermod -p '' "${USERNAME}"
 
 RUN mkdir -p /nix \
   && chown ${UID}:${GID} /nix
