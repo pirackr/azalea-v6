@@ -9,7 +9,7 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - host: opencode.dev.pirackr.xyz
+    - host: opencode.pirackr.xyz
       http:
         paths:
           - path: /
