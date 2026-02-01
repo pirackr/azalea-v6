@@ -11,7 +11,7 @@ data:
         service: ssh://100.90.157.92:22
       - hostname: org.pirackr.xyz
         service: ssh://ssh-pod.org.svc.cluster.local:22
-      - hostname: azalea-dev.pirackr.xyz
+      - hostname: ssh.dev.pirackr.xyz
         service: ssh://azalea-dev.dev.svc.cluster.local:22
       - hostname: "*.pirackr.xyz"
         service: http://traefik.traefik.svc.cluster.local:80

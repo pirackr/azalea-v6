@@ -27,7 +27,7 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "azalea" {
     }
 
     ingress_rule {
-      hostname = "azalea-dev.pirackr.xyz"
+      hostname = "ssh.dev.pirackr.xyz"
       service  = "ssh://azalea-dev.dev.svc.cluster.local:22"
     }
 
@@ -72,9 +72,9 @@ resource "cloudflare_record" "tunnel_org" {
   ttl     = 1
 }
 
-resource "cloudflare_record" "tunnel_azalea_dev" {
+resource "cloudflare_record" "tunnel_ssh_dev" {
   zone_id = var.cloudflare_zone_id
-  name    = "azalea-dev"
+  name    = "ssh.dev"
   type    = "CNAME"
   content = "${cloudflare_zero_trust_tunnel_cloudflared.azalea.id}.cfargotunnel.com"
   proxied = true
