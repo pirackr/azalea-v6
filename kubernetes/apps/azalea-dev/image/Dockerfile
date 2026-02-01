@@ -25,6 +25,7 @@ RUN apt-get update \
     ansible \
     ansible-lint \
     age \
+    gnupg \
   && rm -rf /var/lib/apt/lists/*
 
 RUN set -e; \
@@ -64,10 +65,7 @@ RUN set -e; \
   yq_version="$(curl -fsSL https://api.github.com/repos/mikefarah/yq/releases/latest | jq -r .tag_name)"; \
   curl -fsSLo /usr/local/bin/yq "https://github.com/mikefarah/yq/releases/download/${yq_version}/yq_linux_${arch}"; \
   chmod +x /usr/local/bin/yq; \
-  curl -fsSLo /tmp/doppler.tar.gz "https://cli.doppler.com/download?arch=${arch}&format=tar.gz"; \
-  tar -xzf /tmp/doppler.tar.gz -C /tmp; \
-  mv /tmp/doppler /usr/local/bin/doppler; \
-  rm -f /tmp/doppler.tar.gz
+  curl -Ls --tlsv1.2 --proto "=https" --retry 3 https://cli.doppler.com/install.sh | sh
 
 RUN if getent group "${GID}" >/dev/null; then \
     group_name="$(getent group "${GID}" | cut -d: -f1)"; \
