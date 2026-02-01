@@ -58,6 +58,7 @@ RUN printf '%s\n' 'if [ -e /home/pirackr/.nix-profile/etc/profile.d/nix.sh ]; th
 RUN npm install -g \
     @anthropic-ai/claude-code \
     @openai/codex \
+    happy-coder \
     opencode-ai
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
