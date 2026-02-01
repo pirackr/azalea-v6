@@ -9,7 +9,7 @@ fi
 
 if [[ -d /home/pirackr/.ssh ]]; then
   chmod 700 /home/pirackr/.ssh
-  if [[ -f /home/pirackr/.ssh/authorized_keys ]]; then
+  if [[ -f /home/pirackr/.ssh/authorized_keys && -w /home/pirackr/.ssh/authorized_keys ]]; then
     chmod 600 /home/pirackr/.ssh/authorized_keys
   fi
 fi
