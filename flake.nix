@@ -19,7 +19,6 @@
             # Kubernetes
             kubectl
             kubernetes-helm
-            k9s
             fluxcd
             kubeconform
             kustomize
@@ -28,7 +27,6 @@
             opentofu
             ansible
             ansible-lint
-            cdrtools  # mkisofs for libvirt cloud-init
 
             # Secrets management
             sops
@@ -39,16 +37,13 @@
             yq-go
             curl
             wget
-            openssh
-            git
 
             # Cloud CLI
             cloudflared
 
             # Development
-            go
-            gopls
             shellcheck
+            vim 
           ];
 
           shellHook = ''

@@ -168,6 +168,12 @@ spec:
               continue: false
             - receiver: 'ntfy-alerts'
               matchers:
+                - alertname="KubeDaemonSetRolloutStuck"
+              group_by: ['alertname', 'namespace', 'daemonset']
+              repeat_interval: 8737h
+              continue: false
+            - receiver: 'ntfy-alerts'
+              matchers:
                 - severity=~"critical|warning"
               continue: false
         receivers:
