@@ -29,6 +29,7 @@ spec:
             - |
               set -e
               mkdir -p /home/pirackr/.ssh /home/pirackr/.kube
+              chmod 755 /home/pirackr
               chmod 700 /home/pirackr/.ssh
               chmod 700 /home/pirackr/.kube
               chown -R 1000:1000 /home/pirackr
