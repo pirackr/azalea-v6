@@ -24,7 +24,6 @@ RUN apt-get update \
     xz-utils \
     ansible \
     ansible-lint \
-    sops \
     age \
   && rm -rf /var/lib/apt/lists/*
 
