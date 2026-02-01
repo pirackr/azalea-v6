@@ -63,11 +63,7 @@ RUN set -e; \
   chmod +x /usr/local/bin/cloudflared; \
   yq_version="$(curl -fsSL https://api.github.com/repos/mikefarah/yq/releases/latest | jq -r .tag_name)"; \
   curl -fsSLo /usr/local/bin/yq "https://github.com/mikefarah/yq/releases/download/${yq_version}/yq_linux_${arch}"; \
-  chmod +x /usr/local/bin/yq; \
-  curl -fsSLo /tmp/doppler.tar.gz "https://cli.doppler.com/download?arch=${arch}&format=tar.gz"; \
-  tar -xzf /tmp/doppler.tar.gz -C /tmp; \
-  mv /tmp/doppler /usr/local/bin/doppler; \
-  rm -f /tmp/doppler.tar.gz
+  chmod +x /usr/local/bin/yq
 
 RUN if getent group "${GID}" >/dev/null; then \
     group_name="$(getent group "${GID}" | cut -d: -f1)"; \
