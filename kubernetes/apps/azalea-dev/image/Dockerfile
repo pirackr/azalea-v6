@@ -18,8 +18,17 @@ RUN apt-get update \
     xz-utils \
   && rm -rf /var/lib/apt/lists/*
 
-RUN groupadd -g ${GID} ${USERNAME} \
-  && useradd -m -u ${UID} -g ${GID} -s /bin/bash ${USERNAME}
+RUN if getent group "${GID}" >/dev/null; then \
+    group_name="$(getent group "${GID}" | cut -d: -f1)"; \
+  else \
+    groupadd -g "${GID}" "${USERNAME}"; \
+    group_name="${USERNAME}"; \
+  fi \
+  && if id -u "${USERNAME}" >/dev/null 2>&1; then \
+    usermod -g "${group_name}" "${USERNAME}"; \
+  else \
+    useradd -m -u "${UID}" -g "${group_name}" -s /bin/bash "${USERNAME}"; \
+  fi
 
 RUN mkdir -p /nix \
   && chown ${UID}:${GID} /nix
