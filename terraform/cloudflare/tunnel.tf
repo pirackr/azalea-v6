@@ -28,7 +28,7 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "azalea" {
 
     ingress_rule {
       hostname = "ssh.dev.pirackr.xyz"
-      service  = "ssh://azalea-dev.dev.svc.cluster.local:22"
+      service  = "ssh://azalea-dev.dev.svc.cluster.local:2222"
     }
 
     # Wildcard -> Traefik ingress controller

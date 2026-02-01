@@ -9,7 +9,7 @@ spec:
   type: ClusterIP
   ports:
     - name: ssh
-      port: 22
+      port: 2222
       targetPort: ssh
       protocol: TCP
     - name: web
