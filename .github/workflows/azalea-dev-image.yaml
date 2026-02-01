@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - kubernetes/apps/azalea-dev/image/**
+      - kubernetes/apps/azalea-dev/image/Dockerfile
       - .github/workflows/azalea-dev-image.yaml
   workflow_dispatch:
 
