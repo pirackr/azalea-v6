@@ -9,7 +9,7 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - host: azalea-dev.pirackr.xyz
+    - host: azalea-opencode.pirackr.xyz
       http:
         paths:
           - path: /
