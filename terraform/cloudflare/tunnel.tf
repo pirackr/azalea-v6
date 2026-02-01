@@ -26,6 +26,11 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "azalea" {
       service = "ssh://ssh-pod.org.svc.cluster.local:22"
     }
 
+    ingress_rule {
+      hostname = "azalea-dev.pirackr.xyz"
+      service  = "ssh://azalea-dev.dev.svc.cluster.local:22"
+    }
+
     # Wildcard -> Traefik ingress controller
     ingress_rule {
       hostname = "*.pirackr.xyz"
@@ -61,6 +66,15 @@ resource "cloudflare_record" "tunnel_ssh" {
 resource "cloudflare_record" "tunnel_org" {
   zone_id = var.cloudflare_zone_id
   name    = "org"
+  type    = "CNAME"
+  content = "${cloudflare_zero_trust_tunnel_cloudflared.azalea.id}.cfargotunnel.com"
+  proxied = true
+  ttl     = 1
+}
+
+resource "cloudflare_record" "tunnel_azalea_dev" {
+  zone_id = var.cloudflare_zone_id
+  name    = "azalea-dev"
   type    = "CNAME"
   content = "${cloudflare_zero_trust_tunnel_cloudflared.azalea.id}.cfargotunnel.com"
   proxied = true
