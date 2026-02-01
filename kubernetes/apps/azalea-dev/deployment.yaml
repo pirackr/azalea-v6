@@ -38,6 +38,7 @@ spec:
       containers:
         - name: azalea-dev
           image: ghcr.io/pirackr/azalea-dev:latest
+          imagePullPolicy: Always
           ports:
             - name: ssh
               containerPort: 2222
