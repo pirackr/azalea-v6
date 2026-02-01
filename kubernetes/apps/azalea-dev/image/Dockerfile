@@ -9,6 +9,7 @@ RUN apt-get update \
     bash \
     ca-certificates \
     curl \
+    gh \
     git \
     libfido2-1 \
     openssh-client \
