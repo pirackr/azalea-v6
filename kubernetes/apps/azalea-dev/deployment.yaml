@@ -44,11 +44,21 @@ spec:
             - name: ssh
               containerPort: 2222
               protocol: TCP
+            - name: web
+              containerPort: 3000
+              protocol: TCP
           env:
             - name: HOME
               value: /home/pirackr
             - name: KUBECONFIG
               value: /home/pirackr/.kube/config
+            - name: OPENCODE_SERVER_USERNAME
+              value: pirackr
+            - name: OPENCODE_SERVER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: azalea-dev-opencode
+                  key: OPENCODE_SERVER_PASSWORD
           volumeMounts:
             - name: home
               mountPath: /home/pirackr

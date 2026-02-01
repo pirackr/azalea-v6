@@ -12,5 +12,9 @@ spec:
       port: 22
       targetPort: ssh
       protocol: TCP
+    - name: web
+      port: 80
+      targetPort: web
+      protocol: TCP
   selector:
     app.kubernetes.io/name: azalea-dev

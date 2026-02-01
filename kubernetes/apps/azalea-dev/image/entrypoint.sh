@@ -14,4 +14,6 @@ if [[ -d /home/pirackr/.ssh ]]; then
   fi
 fi
 
+su -p -s /bin/bash -c "opencode web --hostname 0.0.0.0 --port 3000" pirackr &
+
 exec /usr/sbin/sshd -D -e
