@@ -9,6 +9,7 @@ RUN apt-get update \
     bash \
     ca-certificates \
     curl \
+    direnv \
     gh \
     git \
     libfido2-1 \
