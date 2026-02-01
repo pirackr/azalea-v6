@@ -26,6 +26,16 @@ RUN if getent group "${GID}" >/dev/null; then \
   fi \
   && if id -u "${USERNAME}" >/dev/null 2>&1; then \
     usermod -g "${group_name}" "${USERNAME}"; \
+  elif getent passwd "${UID}" >/dev/null; then \
+    existing_user="$(getent passwd "${UID}" | cut -d: -f1)"; \
+    usermod -l "${USERNAME}" "${existing_user}"; \
+    usermod -d "/home/${USERNAME}" -m "${USERNAME}"; \
+    if [ "${group_name}" != "${USERNAME}" ] && getent group "${group_name}" >/dev/null; then \
+      usermod -g "${group_name}" "${USERNAME}"; \
+    else \
+      existing_group="$(getent group "${GID}" | cut -d: -f1)"; \
+      groupmod -n "${USERNAME}" "${existing_group}"; \
+    fi; \
   else \
     useradd -m -u "${UID}" -g "${group_name}" -s /bin/bash "${USERNAME}"; \
   fi
