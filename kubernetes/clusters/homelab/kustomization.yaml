@@ -6,4 +6,3 @@ resources:
   - config.yaml
   - apps.yaml
   - observability.yaml
-  - org-tides.yaml
