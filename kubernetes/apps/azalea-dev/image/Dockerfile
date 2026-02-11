@@ -91,6 +91,7 @@ RUN if getent group "${GID}" >/dev/null; then \
   && passwd -d "${USERNAME}" \
   && usermod -U "${USERNAME}"
 
+# Install AI coding tools - rebuild to get latest opencode version
 RUN npm install -g \
     @anthropic-ai/claude-code \
     @openai/codex \
