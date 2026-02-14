@@ -39,6 +39,7 @@ spec:
       containers:
         - name: calibre-web
           image: lscr.io/linuxserver/calibre-web:latest
+          imagePullPolicy: Always
           ports:
             - name: http
               containerPort: 8083
