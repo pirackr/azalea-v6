@@ -3,10 +3,7 @@ kind: Cluster
 metadata:
   name: postgres
 spec:
-  instances: 2
-  affinity:
-    topologyKey: azalea.io/host
-    podAntiAffinityType: required
+  instances: 1
   storage:
     size: 10Gi
     storageClass: longhorn
