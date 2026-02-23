@@ -111,7 +111,8 @@ spec:
     # Prometheus config
     prometheus:
       prometheusSpec:
-        retention: 7d
+        retention: 180d
+        retentionSize: 70GiB
         resources:
           requests:
             cpu: 200m
@@ -125,7 +126,7 @@ spec:
               accessModes: ["ReadWriteOnce"]
               resources:
                 requests:
-                  storage: 20Gi
+                  storage: 80Gi
         # Scrape bare metal and VM hosts via Tailscale
         additionalScrapeConfigs:
           - job_name: 'bare-metal-nodes'
