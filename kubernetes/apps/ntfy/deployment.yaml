@@ -101,4 +101,4 @@ spec:
       volumes:
         - name: cache
           persistentVolumeClaim:
-            claimName: ntfy-cache
+            claimName: ntfy-cache-local-path
