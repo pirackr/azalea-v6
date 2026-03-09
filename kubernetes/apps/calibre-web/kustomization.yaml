@@ -5,7 +5,7 @@ namespace: calibre-web
 
 resources:
   - namespace.yaml
-  - pvc-longhorn.yaml
+  - pvc-local-path.yaml
   - deployment.yaml
   - service.yaml
   - ingress.yaml

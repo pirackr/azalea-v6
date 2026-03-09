@@ -78,7 +78,7 @@ spec:
       volumes:
         - name: config
           persistentVolumeClaim:
-            claimName: calibre-web-config-longhorn
+            claimName: calibre-web-config-local-path
         - name: books
           persistentVolumeClaim:
-            claimName: calibre-web-books-longhorn
+            claimName: calibre-web-books-local-path
