@@ -24,7 +24,7 @@ spec:
               protocol: TCP
           env:
             - name: POSTGRES_HOST
-              value: postgres-rw.postgres.svc.cluster.local
+              value: postgres-local-rw.postgres.svc.cluster.local
             - name: POSTGRES_DB
               valueFrom:
                 secretKeyRef:
