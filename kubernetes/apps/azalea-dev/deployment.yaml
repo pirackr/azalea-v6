@@ -80,7 +80,7 @@ spec:
       volumes:
         - name: home
           persistentVolumeClaim:
-            claimName: azalea-dev-home
+            claimName: azalea-dev-home-local-path
         - name: ssh-keys
           configMap:
             name: azalea-dev-ssh

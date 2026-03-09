@@ -1,14 +1,14 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: azalea-dev-home
+  name: azalea-dev-home-local-path
   namespace: dev
   labels:
     app.kubernetes.io/name: azalea-dev
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: longhorn
+  storageClassName: local-path
   resources:
     requests:
       storage: 20Gi
