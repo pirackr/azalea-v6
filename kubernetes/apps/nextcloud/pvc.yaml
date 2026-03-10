@@ -4,6 +4,7 @@ metadata:
   name: nextcloud-data
   namespace: nextcloud
 spec:
+  storageClassName: local-path
   accessModes:
     - ReadWriteOnce
   resources:
