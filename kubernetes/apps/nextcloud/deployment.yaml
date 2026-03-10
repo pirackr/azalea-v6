@@ -66,6 +66,16 @@ spec:
             limits:
               cpu: 1
               memory: 2Gi
+          startupProbe:
+            httpGet:
+              path: /
+              port: http
+              httpHeaders:
+                - name: Host
+                  value: nextcloud.pirackr.xyz
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30
           livenessProbe:
             httpGet:
               path: /
@@ -73,9 +83,10 @@ spec:
               httpHeaders:
                 - name: Host
                   value: nextcloud.pirackr.xyz
-            initialDelaySeconds: 60
-            periodSeconds: 10
-            timeoutSeconds: 5
+            initialDelaySeconds: 120
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 12
           readinessProbe:
             httpGet:
               path: /
@@ -83,9 +94,10 @@ spec:
               httpHeaders:
                 - name: Host
                   value: nextcloud.pirackr.xyz
-            initialDelaySeconds: 10
+            initialDelaySeconds: 30
             periodSeconds: 10
-            timeoutSeconds: 5
+            timeoutSeconds: 10
+            failureThreshold: 6
       volumes:
         - name: data
           persistentVolumeClaim:
