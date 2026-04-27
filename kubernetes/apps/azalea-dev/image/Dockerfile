@@ -91,12 +91,12 @@ RUN if getent group "${GID}" >/dev/null; then \
   && passwd -d "${USERNAME}" \
   && usermod -U "${USERNAME}"
 
-# Install AI coding tools - rebuild to get latest opencode version
+# Install AI coding tools
 RUN npm install -g \
     @anthropic-ai/claude-code \
     @openai/codex \
     happy-coder \
-    opencode-ai
+    opencode-ai@1.14.28
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY sshd_config /etc/ssh/sshd_config
