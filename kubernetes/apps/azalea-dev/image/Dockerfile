@@ -95,7 +95,7 @@ RUN if getent group "${GID}" >/dev/null; then \
 RUN npm install -g \
     @anthropic-ai/claude-code \
     @openai/codex \
-    happy-coder \
+    happy-coder@0.13.0 \
     opencode-ai@1.14.28
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
