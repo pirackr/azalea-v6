@@ -5,9 +5,8 @@ resources:
   - calibre-web
   - adguard-home
   - pairdrop
-  - postgres
   - azalea-dev
-  - nextcloud
+  - radicale
   - open-meteo
   - ntfy
   - org-graphql

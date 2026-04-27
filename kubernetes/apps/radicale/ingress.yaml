@@ -1,20 +1,20 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: nextcloud
-  namespace: nextcloud
+  name: radicale
+  namespace: radicale
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: web
 spec:
   ingressClassName: traefik
   rules:
-    - host: nextcloud.pirackr.xyz
+    - host: calendar.pirackr.xyz
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: nextcloud
+                name: radicale
                 port:
                   number: 80
