@@ -15,12 +15,11 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: scraper
-              image: alpine:3.19
+              image: registry.gitlab.com/gitlab-ci-utils/curl-jq:latest
               command:
                 - /bin/sh
                 - -c
                 - |-
-                  apk add --no-cache curl jq
                   /scripts/scrape.sh
               volumeMounts:
                 - name: scripts
